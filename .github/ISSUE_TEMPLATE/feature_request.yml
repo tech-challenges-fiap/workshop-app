@@ -1,5 +1,5 @@
 name: Feature request
-description: Solicitar evolucao da API principal.
+description: Request an enhancement for the main API.
 title: "[feature] "
 labels:
   - enhancement
@@ -7,17 +7,16 @@ body:
   - type: textarea
     id: context
     attributes:
-      label: Contexto
+      label: Context
     validations:
       required: true
   - type: textarea
     id: proposal
     attributes:
-      label: Proposta
+      label: Proposal
     validations:
       required: true
   - type: textarea
     id: risks
     attributes:
-      label: Riscos e dependencias
-
+      label: Risks and dependencies

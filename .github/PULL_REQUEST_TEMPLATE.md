@@ -1,13 +1,12 @@
 ## Summary
 
-Descreva a mudanca e o comportamento esperado.
+Describe the change and the expected behavior.
 
 ## Checklist
 
-- [ ] respeita o ownership do repositorio
-- [ ] nao move responsabilidade para `workshop-edge` ou `workshop-db`
-- [ ] atualiza documentacao local se necessario
-- [ ] lint executado
-- [ ] testes executados
-- [ ] build executado
-
+- [ ] respects repository ownership
+- [ ] does not move responsibility into `workshop-edge` or `workshop-db`
+- [ ] updates local documentation when needed
+- [ ] lint executed
+- [ ] tests executed
+- [ ] build executed

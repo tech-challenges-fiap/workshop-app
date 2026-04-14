@@ -1,26 +1,25 @@
 # workshop-app
 
-API principal do projeto `workshop`.
+Primary API for the `workshop` project.
 
-## Proposito
+## Purpose
 
-Este repositorio concentra a aplicacao principal, incluindo regra de negocio,
-schema evolutivo, migrations, seeds e deploy do container da API.
+This repository owns the main application, including business logic,
+evolutionary schema changes, migrations, seeds, and API container deployment.
 
-## Stack principal
+## Main stack
 
 - Bun
 - TypeScript
 - Docker
 - AWS
 
-## Estrategia de deploy
+## Deployment strategy
 
-- `feature/* -> stag`: Pull Request com lint, testes, build e imagem de container
-- `stag -> prod`: Pull Request de promocao para `production`
-- deploy via pipeline com autenticacao AWS por OIDC
+- `feature/* -> stag`: Pull Request with lint, tests, build, and container image validation
+- `stag -> prod`: promotion Pull Request into `production`
+- pipeline-based deployment using AWS OIDC authentication
 
-## Documentacao local
+## Local documentation
 
 - [docs/README.md](docs/README.md)
-
