@@ -1,0 +1,27 @@
+name: Promotion Source
+
+on:
+  pull_request:
+    branches:
+      - prod
+
+permissions:
+  contents: read
+
+jobs:
+  promotion-source:
+    name: promotion-source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "${HEAD_REF}" != "stag" ]; then
+            echo "Only pull requests from 'stag' to 'prod' are allowed."
+            echo "Received source branch: ${HEAD_REF}"
+            exit 1
+          fi
+
+          echo "Promotion source is valid."
+

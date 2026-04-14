@@ -2,23 +2,23 @@
 
 ## Ownership
 
-- escopo: API principal, schema evolutivo, migrations, seeds e logica de negocio
-- fora do escopo: API Gateway, Lambdas do edge e provisionamento do banco
+- scope: main API, evolutionary schema, migrations, seeds, and business logic
+- out of scope: API Gateway, edge Lambdas, and database provisioning
 
-## Estrutura inicial
+## Initial structure
 
-- `src/`: codigo da API Bun
-- `test/`: testes automatizados
-- `scripts/`: automacoes locais e de CI
+- `src/`: Bun API source code
+- `test/`: automated tests
+- `scripts/`: local and CI automation
 - `.github/`: ownership, templates e workflows
 
-## Ambientes
+## Environments
 
-- branch `stag` mapeada para GitHub environment `staging`
-- branch `prod` mapeada para GitHub environment `production`
-- naming AWS com sufixos `stag` e `prod`
+- branch `stag` maps to GitHub environment `staging`
+- branch `prod` maps to GitHub environment `production`
+- AWS naming uses `stag` and `prod` suffixes
 
-## Variaveis e secrets esperados por ambiente
+## Expected environment variables and secrets
 
 - `AWS_REGION`
 - `AWS_ROLE_ARN`
@@ -28,4 +28,3 @@
 - `JWT_AUDIENCE`
 - `DATADOG_API_KEY`
 - `DATADOG_APP_KEY`
-
