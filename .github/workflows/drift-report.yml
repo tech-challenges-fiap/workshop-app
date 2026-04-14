@@ -1,0 +1,143 @@
+name: Drift Report
+
+on:
+  pull_request:
+    branches:
+      - prod
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  drift-report:
+    name: drift-report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch branches
+        run: git fetch origin prod stag --no-tags
+
+      - name: Build drift report
+        id: report
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+
+          prod_only_commits="$(git log --oneline --no-decorate origin/stag..origin/prod | head -n 20 || true)"
+          stag_only_commits="$(git log --oneline --no-decorate origin/prod..origin/stag | head -n 20 || true)"
+
+          prod_only_commit_count="$(git rev-list --count origin/stag..origin/prod)"
+          stag_only_commit_count="$(git rev-list --count origin/prod..origin/stag)"
+
+          if git diff --quiet origin/stag..origin/prod; then
+            prod_only_content="no"
+          else
+            prod_only_content="yes"
+          fi
+
+          if git diff --quiet origin/prod..origin/stag; then
+            stag_only_content="no"
+          else
+            stag_only_content="yes"
+          fi
+
+          if [ "${HEAD_REF}" = "stag" ]; then
+            source_valid="yes"
+          else
+            source_valid="no"
+          fi
+
+          if [ -z "${prod_only_commits}" ]; then
+            prod_only_commits="(none)"
+          fi
+
+          if [ -z "${stag_only_commits}" ]; then
+            stag_only_commits="(none)"
+          fi
+
+          cat <<EOF > drift-report.md
+          <!-- drift-report -->
+          ## Drift Report
+
+          - PR source branch valid for production promotion: \`${source_valid}\`
+          - Prod contains content not present in stag: \`${prod_only_content}\`
+          - Stag contains content not yet promoted to prod: \`${stag_only_content}\`
+          - Prod-only commit count: \`${prod_only_commit_count}\`
+          - Stag-only commit count: \`${stag_only_commit_count}\`
+
+          ### Prod-only commits
+
+          \`\`\`text
+          ${prod_only_commits}
+          \`\`\`
+
+          ### Stag-only commits
+
+          \`\`\`text
+          ${stag_only_commits}
+          \`\`\`
+          EOF
+
+          cat drift-report.md >> "${GITHUB_STEP_SUMMARY}"
+
+          {
+            echo "body<<EOF"
+            cat drift-report.md
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+          if [ "${source_valid}" != "yes" ]; then
+            echo "Production promotions must come from 'stag'."
+            exit 1
+          fi
+
+          if [ "${prod_only_content}" = "yes" ]; then
+            echo "Prod contains content that is not present in stag."
+            exit 1
+          fi
+
+      - name: Publish PR comment
+        uses: actions/github-script@v7
+        env:
+          REPORT_BODY: ${{ steps.report.outputs.body }}
+        with:
+          script: |
+            const marker = '<!-- drift-report -->';
+            const body = process.env.REPORT_BODY;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) =>
+              comment.user.type === 'Bot' && comment.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body,
+            });
+
