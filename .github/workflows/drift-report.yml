@@ -1,0 +1,240 @@
+name: Drift Report
+
+on:
+  pull_request:
+    branches:
+      - prod
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  drift-report:
+    name: drift-report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch branches
+        run: git fetch origin prod stag --no-tags
+
+      - name: Build drift report
+        id: report
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+
+          merge_base="$(git merge-base origin/stag origin/prod)"
+          prod_delta_file="$(mktemp)"
+          stag_delta_file="$(mktemp)"
+          all_paths_file="$(mktemp)"
+          prod_only_paths_file="$(mktemp)"
+          stag_only_paths_file="$(mktemp)"
+
+          prod_only_commits="$(git log --oneline --no-decorate origin/stag..origin/prod | head -n 20 || true)"
+          stag_only_commits="$(git log --oneline --no-decorate origin/prod..origin/stag | head -n 20 || true)"
+
+          prod_only_commit_count="$(git rev-list --count origin/stag..origin/prod)"
+          stag_only_commit_count="$(git rev-list --count origin/prod..origin/stag)"
+
+          git diff --name-only "${merge_base}" origin/prod | sort -u > "${prod_delta_file}"
+          git diff --name-only "${merge_base}" origin/stag | sort -u > "${stag_delta_file}"
+          cat "${prod_delta_file}" "${stag_delta_file}" | sed '/^$/d' | sort -u > "${all_paths_file}"
+
+          : > "${prod_only_paths_file}"
+          : > "${stag_only_paths_file}"
+
+          blob_oid() {
+            local ref="$1"
+            local path="$2"
+
+            if git cat-file -e "${ref}:${path}" 2>/dev/null; then
+              git rev-parse "${ref}:${path}"
+            else
+              echo "missing"
+            fi
+          }
+
+          while IFS= read -r path; do
+            [ -n "${path}" ] || continue
+
+            base_blob="$(blob_oid "${merge_base}" "${path}")"
+            prod_blob="$(blob_oid "origin/prod" "${path}")"
+            stag_blob="$(blob_oid "origin/stag" "${path}")"
+
+            prod_changed="no"
+            stag_changed="no"
+
+            if [ "${prod_blob}" != "${base_blob}" ]; then
+              prod_changed="yes"
+            fi
+
+            if [ "${stag_blob}" != "${base_blob}" ]; then
+              stag_changed="yes"
+            fi
+
+            if [ "${prod_changed}" = "yes" ] && [ "${stag_changed}" = "no" ]; then
+              printf '%s\n' "${path}" >> "${prod_only_paths_file}"
+              continue
+            fi
+
+            if [ "${prod_changed}" = "no" ] && [ "${stag_changed}" = "yes" ]; then
+              printf '%s\n' "${path}" >> "${stag_only_paths_file}"
+              continue
+            fi
+
+            if [ "${prod_changed}" = "yes" ] && [ "${stag_changed}" = "yes" ] && [ "${prod_blob}" != "${stag_blob}" ]; then
+              printf '%s\n' "${path}" >> "${prod_only_paths_file}"
+              printf '%s\n' "${path}" >> "${stag_only_paths_file}"
+            fi
+          done < "${all_paths_file}"
+
+          prod_only_path_count="$(wc -l < "${prod_only_paths_file}" | tr -d ' ')"
+          stag_only_path_count="$(wc -l < "${stag_only_paths_file}" | tr -d ' ')"
+
+          if [ "${prod_only_path_count}" = "0" ]; then
+            prod_only_content="no"
+          else
+            prod_only_content="yes"
+          fi
+
+          if [ "${stag_only_path_count}" = "0" ]; then
+            stag_only_content="no"
+          else
+            stag_only_content="yes"
+          fi
+
+          if [ "${HEAD_REF}" = "stag" ]; then
+            source_valid="yes"
+          else
+            source_valid="no"
+          fi
+
+          if [ -z "${prod_only_commits}" ]; then
+            prod_only_commits="(none)"
+          fi
+
+          if [ -z "${stag_only_commits}" ]; then
+            stag_only_commits="(none)"
+          fi
+
+          prod_only_paths="$(head -n 20 "${prod_only_paths_file}" || true)"
+          stag_only_paths="$(head -n 20 "${stag_only_paths_file}" || true)"
+
+          if [ -z "${prod_only_paths}" ]; then
+            prod_only_paths="(none)"
+          fi
+
+          if [ -z "${stag_only_paths}" ]; then
+            stag_only_paths="(none)"
+          fi
+
+          cat <<EOF > drift-report.md
+          <!-- drift-report -->
+          ## Drift Report
+
+          - PR source branch valid for production promotion: \`${source_valid}\`
+          - Prod contains content not present in stag: \`${prod_only_content}\`
+          - Stag contains content not yet promoted to prod: \`${stag_only_content}\`
+          - Prod-only commit count: \`${prod_only_commit_count}\`
+          - Stag-only commit count: \`${stag_only_commit_count}\`
+          - Prod-only path count: \`${prod_only_path_count}\`
+          - Stag-only path count: \`${stag_only_path_count}\`
+
+          ### Prod-only commits
+
+          \`\`\`text
+          ${prod_only_commits}
+          \`\`\`
+
+          ### Stag-only commits
+
+          \`\`\`text
+          ${stag_only_commits}
+          \`\`\`
+
+          ### Prod-only paths
+
+          \`\`\`text
+          ${prod_only_paths}
+          \`\`\`
+
+          ### Stag-only paths
+
+          \`\`\`text
+          ${stag_only_paths}
+          \`\`\`
+          EOF
+
+          cat drift-report.md >> "${GITHUB_STEP_SUMMARY}"
+
+          {
+            echo "body<<EOF"
+            cat drift-report.md
+            echo "EOF"
+            echo "source_valid=${source_valid}"
+            echo "prod_only_content=${prod_only_content}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Publish PR comment
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          REPORT_BODY: ${{ steps.report.outputs.body }}
+        with:
+          script: |
+            const marker = '<!-- drift-report -->';
+            const body = process.env.REPORT_BODY;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+              per_page: 100,
+            });
+
+            const existing = comments.find((comment) =>
+              comment.user.type === 'Bot' && comment.body.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number,
+              body,
+            });
+
+      - name: Enforce production promotion policy
+        if: always()
+        env:
+          SOURCE_VALID: ${{ steps.report.outputs.source_valid }}
+          PROD_ONLY_CONTENT: ${{ steps.report.outputs.prod_only_content }}
+        run: |
+          set -euo pipefail
+
+          if [ "${SOURCE_VALID}" != "yes" ]; then
+            echo "Production promotions must come from 'stag'."
+            exit 1
+          fi
+
+          if [ "${PROD_ONLY_CONTENT}" = "yes" ]; then
+            echo "Prod contains changes that are not represented in stag."
+            exit 1
+          fi
