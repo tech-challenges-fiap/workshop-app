@@ -1,7 +1,7 @@
 # workshop-app docs
 
-This directory explains how `workshop-app` should evolve from a minimal Bun
-service into the main application repository for the `workshop` platform.
+This directory explains how `workshop-app` should be developed and maintained
+as a standalone Bun application repository.
 
 ## Read This First
 
@@ -12,7 +12,7 @@ service into the main application repository for the `workshop` platform.
 
 ## Document Map
 
-- [architecture.md](architecture.md) - current boundaries, dependencies, and target application role
+- [architecture.md](architecture.md) - current boundaries and application architecture guidance
 - [development.md](development.md) - prerequisites, local commands, workflow expectations, and doc rules
 - [../AGENTS.md](../AGENTS.md) - repo instructions for AI agents
 - [../.ai/project-context.md](../.ai/project-context.md) - compact AI-readable project context

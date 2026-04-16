@@ -49,7 +49,7 @@ docker build --tag workshop-app:local .
 - Write all documentation in English
 - Keep docs faithful to the current repository state
 - When a command, endpoint, directory, or workflow changes, update the relevant docs in the same change
-- Do not document behavior copied from `14soat-group56` as implemented unless it exists here
+- Do not document planned behavior as implemented unless it exists here
 
 ## When To Update Documentation
 

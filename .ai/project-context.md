@@ -2,9 +2,8 @@
 
 ## Purpose
 
-`workshop-app` is the future application core of the workshop platform split.
-It should become the home of the business and domain logic currently centered
-in `14soat-group56`.
+`workshop-app` is the application service repository. It owns HTTP behavior,
+application logic, tests, and runtime packaging.
 
 ## Current State
 
@@ -13,11 +12,11 @@ in `14soat-group56`.
 - tests for health and 404 behavior
 - Docker image build contract
 
-## Adjacent Repositories
+## Operating Constraint
 
-- `workshop-edge`: edge adapters and external integration contracts
-- `workshop-db`: PostgreSQL infrastructure provisioning
-- `workshop-platform`: shared infrastructure and Kubernetes/platform baseline
+- keep the repository self-contained
+- document only behavior that exists here
+- treat infrastructure and gateway concerns as out of scope unless they are added to this repository
 
 ## Important Workflow
 
