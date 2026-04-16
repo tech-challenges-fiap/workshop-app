@@ -1,30 +1,26 @@
 # workshop-app docs
 
-## Ownership
+This directory explains how `workshop-app` should be developed and maintained
+as a standalone Bun application repository.
 
-- scope: main API, evolutionary schema, migrations, seeds, and business logic
-- out of scope: API Gateway, edge Lambdas, and database provisioning
+## Read This First
 
-## Initial structure
+- Start with [../README.md](../README.md) for the repository purpose, commands, and delivery flow.
+- Read [architecture.md](architecture.md) if you are deciding where a change belongs.
+- Read [development.md](development.md) if you are implementing or reviewing changes.
+- Read [../AGENTS.md](../AGENTS.md) if you are using an AI agent in this repository.
 
-- `src/`: Bun API source code
-- `test/`: automated tests
-- `scripts/`: local and CI automation
-- `.github/`: ownership, templates e workflows
+## Document Map
 
-## Environments
+- [architecture.md](architecture.md) - current boundaries and application architecture guidance
+- [development.md](development.md) - prerequisites, local commands, workflow expectations, and doc rules
+- [../AGENTS.md](../AGENTS.md) - repo instructions for AI agents
+- [../.ai/project-context.md](../.ai/project-context.md) - compact AI-readable project context
+- [../.ai/contributing.md](../.ai/contributing.md) - AI-assisted change checklist
+- [../.ai/task-template.md](../.ai/task-template.md) - reusable task brief template
 
-- branch `stag` maps to GitHub environment `staging`
-- branch `prod` maps to GitHub environment `production`
-- AWS naming uses `stag` and `prod` suffixes
+## Who Should Read What
 
-## Expected environment variables and secrets
-
-- `AWS_REGION`
-- `AWS_ROLE_ARN`
-- `ECR_REPOSITORY`
-- `APP_BASE_URL`
-- `JWT_ISSUER`
-- `JWT_AUDIENCE`
-- `DATADOG_API_KEY`
-- `DATADOG_APP_KEY`
+- Engineers new to the repo: `README.md` then `development.md`
+- Engineers deciding ownership boundaries: `architecture.md`
+- AI-assisted contributors: `AGENTS.md` and `.ai/project-context.md`
