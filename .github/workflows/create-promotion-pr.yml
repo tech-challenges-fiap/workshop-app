@@ -1,0 +1,33 @@
+name: Create Promotion PR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  create:
+    name: create promotion pr
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.PROMOTION_PR_TOKEN }}
+      BASE_BRANCH: prod
+      HEAD_BRANCH: stag
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate promotion token
+        run: |
+          set -euo pipefail
+
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "PROMOTION_PR_TOKEN secret is required to create promotion pull requests." >&2
+            exit 1
+          fi
+
+      - name: Create promotion PR
+        run: ./scripts/create-promotion-pr.sh
