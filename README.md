@@ -49,6 +49,11 @@ Default local runtime:
 - `stag -> prod`: promotion Pull Request allowed only from `stag`
 - `push` to `stag` or `prod`: deployment workflow uses AWS OIDC and builds the application/container artifacts
 - `prod` Pull Requests: drift-report and promotion-source workflows enforce branch discipline
+- `Create Promotion PR`: manual workflow that opens the `stag` to `prod` promotion PR when one does not already exist
+
+The `Create Promotion PR` workflow requires the `PROMOTION_PR_TOKEN` repository
+secret. Use a fine-grained GitHub token with access to this repository and
+pull request read/write permission.
 
 ## Documentation
 
