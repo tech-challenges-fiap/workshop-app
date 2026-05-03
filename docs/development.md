@@ -1,11 +1,13 @@
-# Developing In workshop-app
+# Developing in workshop-app
 
 ## Prerequisites
 
-- Bun `>= 1.3.6`
-- Docker if you need to validate the container image
+- Bun `>= 1.3.6`.
+- Docker for image validation.
+- PostgreSQL for migrations, seeds, and repository integration tests.
+- `kubectl` for Kubernetes manifest rendering checks.
 
-## Local Workflow
+## Local workflow
 
 Install dependencies:
 
@@ -19,44 +21,69 @@ Run the local server:
 bun run dev
 ```
 
+Run database setup when a local PostgreSQL instance is available:
+
+```bash
+bun run db:migrate
+bun run db:seed
+```
+
 Validate the repository:
 
 ```bash
 bun run lint
 bun test
 bun run build
+kubectl kustomize k8s/overlays/stag >/tmp/workshop-app-stag.yaml
+kubectl kustomize k8s/overlays/prod >/tmp/workshop-app-prod.yaml
 docker build --tag workshop-app:local .
 ```
 
-## What The Commands Do
+## What the commands do
 
-- `bun run dev` starts the Bun server from `src/server.ts`
-- `bun run lint` runs the repository whitespace and formatting guard in `scripts/lint.ts`
-- `bun test` executes the Bun test suite in `test/`
-- `bun run build` compiles the server into `dist/`
-- `docker build ...` validates the production image contract used in CI
+- `bun run dev` starts the Bun application from `src/main.ts`.
+- `bun run lint` runs ESLint.
+- `bun test` executes the Bun test suite.
+- `bun run build` compiles TypeScript into `dist/`.
+- `bun run db:migrate` applies SQL migrations from the app repository.
+- `bun run db:seed` applies seed data for local or controlled environments.
+- `docker build ...` validates the production image contract.
 
-## Branching and Delivery Expectations
+## Runtime configuration
 
-- Build features from `feature/*` branches
-- Open Pull Requests into `stag` for normal integration
-- Promote to `prod` only from `stag`
-- Expect `pr-validation.yml` to run lint, test, build, and container validation
-- Expect `promotion-source.yml` and `drift-report.yml` to guard production promotions
+Use `.env.example` as the local reference. The app reads database settings from
+`DATABASE_URL` first, then from `POSTGRES_HOST`, `POSTGRES_PORT`,
+`POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD`.
 
-## Documentation Rules
+For JWT validation, set:
 
-- Write all documentation in English
-- Keep docs faithful to the current repository state
-- When a command, endpoint, directory, or workflow changes, update the relevant docs in the same change
-- Do not document planned behavior as implemented unless it exists here
+- `JWT_SECRET`
+- `JWT_ISSUER`
+- `JWT_AUDIENCE`
 
-## When To Update Documentation
+For OpenTelemetry and Datadog, set:
 
-Update documentation when you change:
+- `OTEL_SERVICE_NAME`
+- `OTEL_EXPORTER_OTLP_ENDPOINT`
+- `DD_SERVICE`
+- `DD_ENV`
+- `DD_VERSION`
 
-- runtime entrypoints or local commands
-- implemented HTTP endpoints
-- repository boundaries or ownership decisions
-- CI validation or deployment workflows
-- AI contributor guidance in `AGENTS.md` or `.ai/`
+## Branching and delivery expectations
+
+- Build features from `feature/*` branches.
+- Open Pull Requests into `stag` for normal integration.
+- Promote to `prod` only from `stag`.
+- Expect `pr-validation.yml` to run lint, test, build, Kubernetes rendering,
+  and container validation.
+- Expect `deploy.yml` to publish the image, apply manifests, run migrations,
+  and wait for rollout.
+- Expect `promotion-source.yml` and `drift-report.yml` to guard production
+  promotions.
+
+## Documentation rules
+
+- Write all documentation in English.
+- Keep docs faithful to the current repository state.
+- Update docs when commands, endpoints, directories, or workflows change.
+- Do not document planned behavior as implemented unless it exists here.
