@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workshop-app-config
+data:
+  APP_PORT: "3000"
+  JWT_ISSUER: "workshop-edge"
+  JWT_AUDIENCE: "workshop-app"
+  OTEL_SERVICE_NAME: "workshop-app"
+  DD_SERVICE: "workshop-app"

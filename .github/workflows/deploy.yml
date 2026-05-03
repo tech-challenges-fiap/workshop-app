@@ -32,9 +32,39 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
 
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Build application
         run: bun run build
 
       - name: Build container image
-        run: docker build --tag "${{ vars.ECR_REPOSITORY }}:${{ github.sha }}" .
+        env:
+          IMAGE_URI: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          docker build --tag "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
 
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region "${{ vars.AWS_REGION }}" --name "${{ vars.EKS_CLUSTER_NAME }}"
+
+      - name: Deploy Kubernetes manifests
+        env:
+          IMAGE_URI: ${{ steps.ecr.outputs.registry }}/${{ vars.ECR_REPOSITORY }}:${{ github.sha }}
+          OVERLAY: ${{ github.ref_name == 'stag' && 'stag' || 'prod' }}
+          NAMESPACE: ${{ github.ref_name == 'stag' && vars.K8S_NAMESPACE_STAG || vars.K8S_NAMESPACE_PROD }}
+        run: |
+          kubectl -n "$NAMESPACE" delete job workshop-app-migrations --ignore-not-found=true
+          kubectl kustomize "k8s/overlays/$OVERLAY/migrations" > /tmp/workshop-app-migrations.yaml
+          sed -i "s#image: workshop-app:latest#image: $IMAGE_URI#g" /tmp/workshop-app-migrations.yaml
+          kubectl -n "$NAMESPACE" apply -f /tmp/workshop-app-migrations.yaml
+          kubectl -n "$NAMESPACE" wait --for=condition=complete job/workshop-app-migrations --timeout=180s
+
+          kubectl kustomize "k8s/overlays/$OVERLAY" > /tmp/workshop-app.yaml
+          sed -i "s#image: workshop-app:latest#image: $IMAGE_URI#g" /tmp/workshop-app.yaml
+          kubectl -n "$NAMESPACE" apply -f /tmp/workshop-app.yaml
+          kubectl -n "$NAMESPACE" rollout status deployment/workshop-app --timeout=180s
