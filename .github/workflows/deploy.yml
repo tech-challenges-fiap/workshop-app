@@ -101,7 +101,18 @@ jobs:
           kubectl kustomize "k8s/overlays/$OVERLAY/migrations" > /tmp/workshop-app-migrations.yaml
           sed -i "s#image: workshop-app:latest#image: $IMAGE_URI#g" /tmp/workshop-app-migrations.yaml
           kubectl -n "$NAMESPACE" apply -f /tmp/workshop-app-migrations.yaml
-          kubectl -n "$NAMESPACE" wait --for=condition=complete job/workshop-app-migrations --timeout=180s
+          if ! kubectl -n "$NAMESPACE" wait --for=condition=complete job/workshop-app-migrations --timeout=180s; then
+            echo "=== Migration job failed or timed out ==="
+            echo "--- Job status ---"
+            kubectl -n "$NAMESPACE" get job workshop-app-migrations -o yaml
+            echo "--- Pod status ---"
+            kubectl -n "$NAMESPACE" get pods -l job-name=workshop-app-migrations -o wide
+            echo "--- Pod describe ---"
+            kubectl -n "$NAMESPACE" describe pods -l job-name=workshop-app-migrations
+            echo "--- Pod logs ---"
+            kubectl -n "$NAMESPACE" logs -l job-name=workshop-app-migrations --tail=100 --all-containers || true
+            exit 1
+          fi
 
           kubectl kustomize "k8s/overlays/$OVERLAY" > /tmp/workshop-app.yaml
           sed -i "s#image: workshop-app:latest#image: $IMAGE_URI#g" /tmp/workshop-app.yaml
