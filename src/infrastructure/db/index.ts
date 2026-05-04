@@ -69,8 +69,28 @@ export function buildDatabaseUrl(): string {
   return `postgresql://${user}:${password}@${host}:${port}/${db}`;
 }
 
+function buildSslConfig(): boolean | { rejectUnauthorized: boolean } | undefined {
+  const sslEnv = process.env.POSTGRES_SSL;
+  if (sslEnv === "false" || sslEnv === "0") {
+    return undefined;
+  }
+  if (sslEnv === "true" || sslEnv === "1") {
+    return { rejectUnauthorized: false };
+  }
+  if (isTestEnv()) {
+    return undefined;
+  }
+  // Default to SSL for non-test environments when host is not localhost/postgres (i.e. RDS)
+  const host = process.env.POSTGRES_HOST ?? "postgres";
+  if (host !== "localhost" && host !== "127.0.0.1" && host !== "postgres") {
+    return { rejectUnauthorized: false };
+  }
+  return undefined;
+}
+
 export const pool = new Pool({
   connectionString: buildDatabaseUrl(),
+  ssl: buildSslConfig(),
 });
 
 export const db = drizzle(pool);
