@@ -8,6 +8,7 @@
     "start:prod": "bun run dist/src/main.js",
     "health": "curl -f http://localhost:3000/health || exit 1",
     "build": "tsc -p tsconfig.build.json",
+    "smoke:deploy": "bun run scripts/deploy-smoke.ts",
     "arch:check": "bun run scripts/architecture-gate.ts check",
     "arch:graph": "bun run scripts/architecture-gate.ts graph",
     "test": "bun test",

@@ -43,6 +43,7 @@ bun run dev
 bun run lint
 bun test
 bun run build
+bun run smoke:deploy
 bun run db:migrate
 bun run db:seed
 docker build --tag workshop-app:local .
@@ -64,7 +65,8 @@ variables documented in `.env.example`.
 - `stag -> prod`: promotion Pull Request allowed only from `stag`.
 - `push` to `stag` or `prod`: deployment workflow builds and pushes the image
   to ECR, applies Kubernetes manifests, runs the migration `Job`, and waits for
-  the deployment rollout.
+  the deployment rollout before smoke-checking `/health`, `/ready`, and
+  protected `GET /work-orders`.
 - `prod` Pull Requests: drift-report and promotion-source workflows enforce
   branch discipline.
 - `Create Promotion PR`: manual workflow that opens the `stag` to `prod`

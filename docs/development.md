@@ -77,7 +77,8 @@ For OpenTelemetry and Datadog, set:
 - Expect `pr-validation.yml` to run lint, test, build, Kubernetes rendering,
   and container validation.
 - Expect `deploy.yml` to publish the image, apply manifests, run migrations,
-  and wait for rollout.
+  wait for rollout, and smoke-check `/health`, `/ready`, and protected
+  `GET /work-orders`.
 - Expect `promotion-source.yml` and `drift-report.yml` to guard production
   promotions.
 
