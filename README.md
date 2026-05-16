@@ -1,5 +1,7 @@
 # workshop-app
 
+[![Prod/Stag sync](https://github.com/tech-challenges-fiap/workshop-app/actions/workflows/branch-sync.yml/badge.svg)](https://github.com/tech-challenges-fiap/workshop-app/actions/workflows/branch-sync.yml)
+
 `workshop-app` is the main application repository for the `workshop` service.
 It owns the HTTP API, domain and application logic, PostgreSQL schema
 evolution, migrations, seeds, runtime packaging, and Kubernetes deployment
