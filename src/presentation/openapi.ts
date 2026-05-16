@@ -13,8 +13,7 @@ export function registerOpenApiRoutes(app: Hono) {
   });
 
   app.get("/docs", (c: Context) => {
-    // Swagger UI HTML referencing /openapi.yaml
-    const swaggerUrl = `${c.req.url.startsWith("http") ? "" : `${c.req.header("x-forwarded-proto") || "http"}://${c.req.header("host")}`}/openapi.yaml`;
+    const swaggerUrl = "./openapi.yaml";
     const html = `<!DOCTYPE html>
 <html lang=\"en\">
 <head>
