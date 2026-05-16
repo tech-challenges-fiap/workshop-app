@@ -1,13 +1,22 @@
 openapi: 3.0.3
 info:
-  title: Mechanical Workshop API
+  title: Workshop App — Internal HTTP API
   version: 1.0.0
   description: |
-    Mechanical workshop system API.
-    This document covers only the routes currently implemented and functional.
+    Internal HTTP API for the `workshop-app` service.
+
+    In production this service runs inside Kubernetes (EKS) and is accessed exclusively through
+    `workshop-edge` (AWS HTTP API Gateway), which:
+    - Issues JWT tokens via CPF-based authentication (`POST /auth/login` on the edge)
+    - Proxies all other requests to this service under the `/api/` path prefix (stripped before forwarding)
+
+    JWT tokens are HS256-signed and issued by `workshop-edge`, not by this service.
+    The legacy `POST /auth/login` (username/password) on this service is disabled in production.
+
+    For the external-facing public API, refer to the `workshop-edge` OpenAPI specification.
 servers:
   - url: /
-    description: Default application server (uses the current host/port)
+    description: Internal service URL (direct access, without /api prefix)
 
 paths:
   /health:
@@ -33,7 +42,13 @@ paths:
     post:
       tags:
         - Auth
-      summary: Admin login
+      deprecated: true
+      summary: Legacy admin login (username/password)
+      description: |
+        Legacy authentication endpoint — disabled in production.
+        In production, JWT tokens are issued exclusively by `workshop-edge` via CPF-based
+        authentication (`POST /auth/login` on the edge service).
+        This route may be used for local development only.
       operationId: loginAdmin
       security: []
       requestBody:
@@ -1831,6 +1846,7 @@ paths:
               $ref: "#/components/schemas/CreateVehicleRequest"
             example:
               plate: ABC1D23
+              brand: Fiat
               model: Fiat Uno
               year: 2015
               ownerPersonId: 1
@@ -1847,12 +1863,41 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/VehicleValidationErrorResponse"
+        "401":
+          description: Unauthorized (missing or invalid JWT)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleErrorResponse"
         "409":
           description: License plate already exists
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/SimpleErrorResponse"
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleErrorResponse"
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - Vehicles
+      summary: List vehicles
+      operationId: listVehicles
+      responses:
+        "200":
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Vehicle"
         "401":
           description: Unauthorized (missing or invalid JWT)
           content:
@@ -1868,82 +1913,53 @@ paths:
       security:
         - bearerAuth: []
 
-      get:
-        tags:
-          - Vehicles
-        summary: List vehicles
-        operationId: listVehicles
-        responses:
-          "200":
-            description: List of vehicles
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Vehicle"
-          "500":
-            description: Internal error
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/SimpleErrorResponse"
-          "401":
-            description: Unauthorized (missing or invalid JWT)
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/SimpleErrorResponse"
-        security:
-          - bearerAuth: []
+  /vehicles/by-plate/{plate}:
+    get:
+      tags:
+        - Vehicles
+      summary: Get vehicle by plate
+      operationId: getVehicleByPlate
+      parameters:
+        - name: plate
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vehicle found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vehicle"
+        "400":
+          description: Invalid license plate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VehicleValidationErrorResponse"
+        "401":
+          description: Unauthorized (missing or invalid JWT)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleErrorResponse"
+        "404":
+          description: Vehicle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleErrorResponse"
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimpleErrorResponse"
+      security:
+        - bearerAuth: []
 
-    /vehicles/by-plate/{plate}:
-      get:
-        tags:
-          - Vehicles
-        summary: Get vehicle by plate
-        operationId: getVehicleByPlate
-        parameters:
-          - name: plate
-            in: path
-            required: true
-            schema:
-              type: string
-        responses:
-          "200":
-            description: Vehicle found
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/Vehicle"
-          "400":
-            description: Invalid license plate
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/VehicleValidationErrorResponse"
-          "401":
-            description: Unauthorized (missing or invalid JWT)
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/SimpleErrorResponse"
-          "404":
-            description: Vehicle not found
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/SimpleErrorResponse"
-          "500":
-            description: Internal error
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/schemas/SimpleErrorResponse"
-        security:
-          - bearerAuth: []
-
-    /vehicles/{id}:
+  /vehicles/{id}:
     get:
       tags:
         - Vehicles
