@@ -1,33 +1,41 @@
 # workshop-app
 
+[![prod/stag](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftech-challenges-fiap%2Fworkshop-app%2Fbadges%2Fbadges%2Fprod-stag-sync.json)](https://github.com/tech-challenges-fiap/workshop-app/compare/prod...stag)
+
 `workshop-app` is the main application repository for the `workshop` service.
-It owns HTTP service behavior, application logic, runtime packaging, and
-application-focused validation.
+It owns the HTTP API, domain and application logic, PostgreSQL schema
+evolution, migrations, seeds, runtime packaging, and Kubernetes deployment
+assets.
 
-## What This Repository Owns
+This repository does not own API Gateway, edge Lambdas, EKS provisioning, or
+RDS provisioning.
 
-- The Bun-based HTTP application
-- Application and domain logic
-- Runtime entrypoints and container packaging
-- Application-level tests and local validation scripts
+## What this repository owns
 
-This repository does not own API Gateway concerns, edge Lambdas, or database
-infrastructure provisioning.
+- Bun-based Hono HTTP API.
+- Workshop domain and application use cases.
+- Drizzle schema, SQL migrations, seeds, and PostgreSQL repositories.
+- External JWT validation for tokens issued by `workshop-edge`.
+- JSON request logs, request correlation, and OpenTelemetry bootstrap.
+- Docker image and Kubernetes manifests for `stag` and `prod`.
 
-## Current Scaffold Status
+## Runtime contract
 
-The current scaffold is intentionally small. Today it provides:
+The official authentication flow is:
 
-- a Bun HTTP server in `src/server.ts`
-- a minimal request handler in `src/app.ts`
-- a `GET /health` endpoint returning service status metadata
-- Bun-based lint, test, and build scripts
-- a production-oriented Dockerfile used by CI container validation
+```text
+API Gateway -> Lambda auth-cpf -> JWT -> workshop-app
+```
 
-That means the repository is ready for incremental feature work, but it still
-exposes only a minimal bootstrap service today.
+`workshop-app` validates the JWT signature with `JWT_SECRET`, requires
+`JWT_ISSUER=workshop-edge`, requires `JWT_AUDIENCE=workshop-app`, checks token
+expiration, and requires the claims `sub`, `person_id`, `cpf`, `role`,
+`status`, `iss`, `aud`, `exp`, `iat`, and `jti`.
 
-## Local Commands
+The app accepts protected requests only when `status` is `active`. It does not
+log raw CPF values or bearer tokens.
+
+## Local commands
 
 ```bash
 bun install
@@ -35,6 +43,8 @@ bun run dev
 bun run lint
 bun test
 bun run build
+bun run db:migrate
+bun run db:seed
 docker build --tag workshop-app:local .
 ```
 
@@ -42,22 +52,31 @@ Default local runtime:
 
 - Application port: `3000`
 - Health endpoint: `http://localhost:3000/health`
+- Readiness endpoint: `http://localhost:3000/ready`
 
-## Delivery Flow
+PostgreSQL configuration comes from `DATABASE_URL` or the `POSTGRES_*`
+variables documented in `.env.example`.
 
-- `feature/* -> stag`: Pull Request validated by lint, tests, build, and Docker image build
-- `stag -> prod`: promotion Pull Request allowed only from `stag`
-- `push` to `stag` or `prod`: deployment workflow uses AWS OIDC and builds the application/container artifacts
-- `prod` Pull Requests: drift-report and promotion-source workflows enforce branch discipline
-- `Create Promotion PR`: manual workflow that opens the `stag` to `prod` promotion PR when one does not already exist
+## Delivery flow
 
-The `Create Promotion PR` workflow requires the `PROMOTION_PR_TOKEN` repository
-secret. Use a fine-grained GitHub token with access to this repository and
-pull request read/write permission.
+- `feature/* -> stag`: Pull Request validated by lint, tests, build,
+  Kubernetes manifest rendering, and Docker image build.
+- `stag -> prod`: promotion Pull Request allowed only from `stag`.
+- `push` to `stag` or `prod`: deployment workflow builds and pushes the image
+  to ECR, applies Kubernetes manifests, runs the migration `Job`, and waits for
+  the deployment rollout.
+- `prod` Pull Requests: drift-report and promotion-source workflows enforce
+  branch discipline.
+- `Create Promotion PR`: manual workflow that opens the `stag` to `prod`
+  promotion PR when one does not already exist.
+
+The `Create Promotion PR` workflow requires the `PROMOTION_PR_TOKEN`
+repository secret. Use a fine-grained GitHub token with access to this
+repository and pull request read/write permission.
 
 ## Documentation
 
-- [docs/README.md](docs/README.md) - docs index and reading guide
-- [docs/architecture.md](docs/architecture.md) - repository boundaries and architecture guidance
-- [docs/development.md](docs/development.md) - local workflow, validation, and documentation rules
-- [AGENTS.md](AGENTS.md) - instructions for AI contributors
+- [Docs index](docs/README.md)
+- [Architecture](docs/architecture.md)
+- [Development](docs/development.md)
+- [AI contributor instructions](AGENTS.md)

@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "Preserve",
-    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "types": ["bun-types"]
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "types": ["node", "bun-types"]
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "test/**/*.ts"]
+  "include": ["src", "scripts"],
+  "exclude": ["node_modules", "dist"]
 }
-

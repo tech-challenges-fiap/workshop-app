@@ -7,10 +7,12 @@ application logic, tests, and runtime packaging.
 
 ## Current State
 
-- Bun HTTP service
-- single `GET /health` endpoint
-- tests for health and 404 behavior
-- Docker image build contract
+- Bun/Hono HTTP API with workshop domain routes
+- PostgreSQL repositories, Drizzle schema, migrations, and seeds
+- external JWT validation for tokens emitted by `workshop-edge`
+- `GET /health` and `GET /ready` operational endpoints
+- JSON request logs and OpenTelemetry bootstrap
+- Docker image build contract and Kubernetes manifests for `stag` and `prod`
 
 ## Operating Constraint
 

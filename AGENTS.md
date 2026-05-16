@@ -10,7 +10,7 @@ service behavior, domain/application logic, and runtime packaging.
 In scope:
 
 - Bun application code in `src/`
-- service tests in `test/`
+- service tests in `src/`
 - container/runtime behavior
 - app-focused documentation
 
@@ -25,9 +25,9 @@ Out of scope:
 - `README.md`
 - `docs/architecture.md`
 - `docs/development.md`
-- `src/app.ts`
-- `src/server.ts`
-- `test/app.test.ts`
+- `src/main.ts`
+- `src/bootstrap/register-routes.ts`
+- `src/presentation/middleware/auth.ts`
 
 ## Validation Commands
 
@@ -35,6 +35,7 @@ Out of scope:
 bun run lint
 bun test
 bun run build
+kubectl kustomize k8s/overlays/stag >/tmp/workshop-app-stag.yaml
 docker build --tag workshop-app:local .
 ```
 

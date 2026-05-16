@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: workshop-app-config
+data:
+  APP_ENV: "prod"
+  DD_ENV: "prod"
