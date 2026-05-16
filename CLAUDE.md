@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Overview
+
+`workshop-app` is the HTTP API and business logic service for the `workshop` domain. It owns HTTP behavior, domain/application logic, Drizzle schema/migrations, and Kubernetes manifests. It does not own API Gateway routes, Lambda implementations, EKS/VPC provisioning, or RDS provisioning.
+
 ## Commands
 
 ```bash
@@ -65,12 +69,9 @@ Drizzle ORM over PostgreSQL. Schema definitions live in `src/infrastructure/db/s
 
 OpenTelemetry starts only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. All request logs are JSON with `x-request-id` correlation.
 
-## Branching and delivery
+## Branching and Delivery
 
 - Feature work: `feature/*` → PR into `stag`
 - Never open PRs directly to `prod`; promote only via `stag → prod` promotion PR using a merge commit (no squash/rebase)
 - Always `git fetch origin --prune` and branch from `origin/stag` before starting work
 
-## Scope
-
-This repository owns HTTP behavior, domain/application logic, Drizzle schema/migrations, and Kubernetes manifests. It does not own API Gateway routes, Lambda implementations, EKS/VPC provisioning, or RDS provisioning.
