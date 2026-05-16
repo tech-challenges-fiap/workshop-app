@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: workshop-app
+spec:
+  rules:
+    - host: workshop-app-prod
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: workshop-app
+                port:
+                  name: http
