@@ -15,8 +15,10 @@ info:
 
     For the external-facing public API, refer to the `workshop-edge` OpenAPI specification.
 servers:
-  - url: /
-    description: Internal service URL (direct access, without /api prefix)
+  - url: http://localhost:3000
+    description: Local development (bun run dev)
+  - url: http://a17a801f606e24a579035236ef35a4ef-670c00c0b68f10ee.elb.sa-east-1.amazonaws.com
+    description: Staging / Production — internal ELB (requires Host header; use workshop-edge for external access)
 
 paths:
   /health:
