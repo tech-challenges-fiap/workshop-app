@@ -46,13 +46,7 @@ function buildPostgresUrl(
   port: string,
   db: string,
 ): string {
-  const url = new URL("postgresql://localhost");
-  url.username = user;
-  url.password = password;
-  url.hostname = host;
-  url.port = port;
-  url.pathname = `/${db}`;
-  return url.toString();
+  return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(db)}`;
 }
 
 export function buildDatabaseUrl(): string {
