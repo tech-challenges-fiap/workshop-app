@@ -1,0 +1,87 @@
+name: Update Prod/Stag Badge
+
+on:
+  push:
+    branches:
+      - prod
+      - stag
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prod-stag-badge
+  cancel-in-progress: false
+
+jobs:
+  update-badge:
+    name: update prod/stag badge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch branches
+        run: git fetch origin prod stag --no-tags
+
+      - name: Build badge payload
+        run: |
+          set -euo pipefail
+
+          mkdir -p badge-output/badges
+
+          prod_sha="$(git rev-parse origin/prod)"
+          stag_sha="$(git rev-parse origin/stag)"
+
+          echo "prod: ${prod_sha}"
+          echo "stag: ${stag_sha}"
+
+          if git diff --quiet origin/prod origin/stag -- .; then
+            message="synced"
+            color="brightgreen"
+          else
+            message="drift"
+            color="orange"
+          fi
+
+          printf '{\n  "schemaVersion": 1,\n  "label": "prod/stag",\n  "message": "%s",\n  "color": "%s"\n}\n' \
+            "${message}" \
+            "${color}" > badge-output/badges/prod-stag-sync.json
+
+          cat badge-output/badges/prod-stag-sync.json
+
+      - name: Publish badge payload
+        run: |
+          set -euo pipefail
+
+          tmpdir="$(mktemp -d)"
+          cp badge-output/badges/prod-stag-sync.json "${tmpdir}/prod-stag-sync.json"
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin badges --depth=1 || true
+
+          if git show-ref --verify --quiet refs/remotes/origin/badges; then
+            git switch badges
+            git reset --hard origin/badges
+          else
+            git switch --orphan badges
+            git rm -rf . >/dev/null 2>&1 || true
+          fi
+
+          mkdir -p badges
+          cp "${tmpdir}/prod-stag-sync.json" badges/prod-stag-sync.json
+
+          git add badges/prod-stag-sync.json
+
+          if git diff --cached --quiet; then
+            echo "Badge payload already up to date."
+            exit 0
+          fi
+
+          git commit -m "update prod stag badge"
+          git push origin badges
