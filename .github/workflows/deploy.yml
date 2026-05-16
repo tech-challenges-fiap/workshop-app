@@ -119,3 +119,19 @@ jobs:
           kubectl -n "$NAMESPACE" apply -f /tmp/workshop-app.yaml
           kubectl -n "$NAMESPACE" rollout restart deployment/workshop-app
           kubectl -n "$NAMESPACE" rollout status deployment/workshop-app --timeout=180s
+
+      - name: Smoke test deployment
+        env:
+          NAMESPACE: ${{ github.ref_name == 'stag' && vars.K8S_NAMESPACE_STAG || vars.K8S_NAMESPACE_PROD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          set -euo pipefail
+
+          : "${JWT_SECRET:?JWT_SECRET secret is required}"
+
+          kubectl -n "$NAMESPACE" port-forward --address 127.0.0.1 service/workshop-app 3000:3000 &
+          port_forward_pid="$!"
+          trap 'kill "$port_forward_pid" 2>/dev/null || true' EXIT
+
+          bunx wait-on --timeout 60000 http://127.0.0.1:3000/health
+          bun run smoke:deploy
