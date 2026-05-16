@@ -62,6 +62,26 @@ describe("buildDatabaseUrl", () => {
     expect(url).toBe("postgresql://main:pw@db-host:6543/workshop_db");
   });
 
+  it("encodes generated URL credentials when POSTGRES_PASSWORD has special characters", () => {
+    process.env.NODE_ENV = "production";
+    delete process.env.DATABASE_URL;
+    process.env.POSTGRES_USER = "workshop_admin";
+    process.env.POSTGRES_PASSWORD = "p@ss:word/with?#special";
+    process.env.POSTGRES_HOST = "db-host";
+    process.env.POSTGRES_PORT = "5432";
+    process.env.POSTGRES_DB = "workshop";
+
+    const url = buildDatabaseUrl();
+    const parsed = new URL(url);
+
+    expect(parsed.protocol).toBe("postgresql:");
+    expect(parsed.username).toBe("workshop_admin");
+    expect(parsed.password).toBe(encodeURIComponent("p@ss:word/with?#special"));
+    expect(parsed.hostname).toBe("db-host");
+    expect(parsed.port).toBe("5432");
+    expect(parsed.pathname).toBe("/workshop");
+  });
+
   it("treats bun test runner argv as test env", () => {
     process.env.NODE_ENV = "production";
     delete process.env.DATABASE_URL_TEST;

@@ -39,6 +39,22 @@ async function ensureTestDatabaseExists(): Promise<void> {
   }
 }
 
+function buildPostgresUrl(
+  user: string,
+  password: string,
+  host: string,
+  port: string,
+  db: string,
+): string {
+  const url = new URL("postgresql://localhost");
+  url.username = user;
+  url.password = password;
+  url.hostname = host;
+  url.port = port;
+  url.pathname = `/${db}`;
+  return url.toString();
+}
+
 export function buildDatabaseUrl(): string {
   if (isTestEnv()) {
     const urlTest = process.env.DATABASE_URL_TEST;
@@ -52,7 +68,7 @@ export function buildDatabaseUrl(): string {
     const port = process.env.POSTGRES_PORT ?? "5432";
     const db = process.env.POSTGRES_DB_TEST ?? "workshop_db_test";
 
-    return `postgresql://${user}:${password}@${host}:${port}/${db}`;
+    return buildPostgresUrl(user, password, host, port, db);
   }
 
   const url = process.env.DATABASE_URL;
@@ -66,7 +82,7 @@ export function buildDatabaseUrl(): string {
   const port = process.env.POSTGRES_PORT ?? "5432";
   const db = process.env.POSTGRES_DB ?? "workshop_db";
 
-  return `postgresql://${user}:${password}@${host}:${port}/${db}`;
+  return buildPostgresUrl(user, password, host, port, db);
 }
 
 function buildSslConfig(): boolean | { rejectUnauthorized: boolean } | undefined {
