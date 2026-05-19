@@ -8,6 +8,7 @@ import { Money } from "../../domain/shared/value-object/money";
 import { ServiceTaskStatus } from "../../domain/service-task/value-object/service-task-status";
 import type { VehicleRepository } from "../../domain/vehicle/repository/vehicle-repository";
 import { VehicleNotFound } from "../../domain/vehicle/domain-error/vehicle-not-found";
+import { recordWorkOrderCreated } from "../../infrastructure/observability/work-order-metrics";
 
 export interface CreateWorkOrderServiceTaskInput {
   serviceTaskId: number;
@@ -68,6 +69,8 @@ export class CreateWorkOrder {
     });
 
     const created = await this.workOrderRepository.create(workOrder);
+
+    recordWorkOrderCreated();
 
     return created.toSnapshot();
   }

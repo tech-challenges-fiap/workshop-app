@@ -17,6 +17,16 @@ export const authFailureCounter = businessMeter.createCounter("workshop_app_auth
 export const workOrderCreatedCounter = businessMeter.createCounter(
   "workshop_app_work_orders_created_total",
 );
+export const workOrderStatusChangeCounter = businessMeter.createCounter(
+  "workshop_app_work_order_status_changes_total",
+);
+export const workOrderDurationHistogram = businessMeter.createHistogram(
+  "workshop_app_work_order_duration_seconds",
+  { description: "Time spent in each work order status", unit: "s" },
+);
+export const integrationErrorCounter = businessMeter.createCounter(
+  "workshop_app_integration_errors_total",
+);
 
 export function startTelemetry(): void {
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;

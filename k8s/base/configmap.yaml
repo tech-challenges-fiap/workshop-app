@@ -7,4 +7,5 @@ data:
   JWT_ISSUER: "workshop-edge"
   JWT_AUDIENCE: "workshop-app"
   OTEL_SERVICE_NAME: "workshop-app"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
   DD_SERVICE: "workshop-app"

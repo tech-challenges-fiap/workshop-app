@@ -11,14 +11,19 @@ function baseFields(level: LogLevel, message: string): Record<string, unknown> {
   const activeSpan = trace.getActiveSpan();
   const spanContext = activeSpan?.spanContext();
 
+  const traceId = spanContext?.traceId;
+  const spanId = spanContext?.spanId;
+
   return {
     timestamp: new Date().toISOString(),
     service: process.env.OTEL_SERVICE_NAME ?? process.env.DD_SERVICE ?? "workshop-app",
     env: process.env.APP_ENV ?? process.env.DD_ENV ?? process.env.NODE_ENV ?? "local",
     level,
     message,
-    trace_id: spanContext?.traceId,
-    span_id: spanContext?.spanId,
+    trace_id: traceId,
+    span_id: spanId,
+    "dd.trace_id": traceId ? BigInt(`0x${traceId.slice(16)}`).toString() : undefined,
+    "dd.span_id": spanId ? BigInt(`0x${spanId}`).toString() : undefined,
   };
 }
 
