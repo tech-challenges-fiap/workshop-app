@@ -1,6 +1,7 @@
 import { WorkOrder } from "../../domain/work-order/aggregate/work-order";
 import type { WorkOrderRepository } from "../../domain/work-order/repository/work-order-repository";
 import { WorkOrderNotFound } from "../../domain/work-order/domain-error/work-order-not-found";
+import { recordWorkOrderStatusChange } from "../../infrastructure/observability/work-order-metrics";
 import {
   buildCompleteDiagnosisNotificationInput,
   type CompleteDiagnosisNotificationDeps,
@@ -26,11 +27,13 @@ export class CompleteDiagnosis {
       throw new WorkOrderNotFound(input.id);
     }
 
+    const previousStatus = workOrder.toSnapshot().status;
     const completedAt = input.completedAt ?? new Date();
     workOrder.completeDiagnosis(completedAt);
     await this.workOrderRepository.save(workOrder);
 
     const snapshot = workOrder.toSnapshot();
+    recordWorkOrderStatusChange(previousStatus, snapshot.status);
     await this.trySendNotification(snapshot);
 
     return snapshot;
