@@ -13,11 +13,20 @@ spec:
       labels:
         app.kubernetes.io/name: workshop-app
         app.kubernetes.io/component: api
+      annotations:
+        ad.datadoghq.com/api.logs: '[{"source":"nodejs","service":"workshop-app"}]'
     spec:
       containers:
         - name: api
           image: workshop-app
           imagePullPolicy: IfNotPresent
+          env:
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://$(DD_AGENT_HOST):4318"
           envFrom:
             - configMapRef:
                 name: workshop-app-config

@@ -1,6 +1,7 @@
 import { WorkOrder } from "../../domain/work-order/aggregate/work-order";
 import type { WorkOrderRepository } from "../../domain/work-order/repository/work-order-repository";
 import { WorkOrderNotFound } from "../../domain/work-order/domain-error/work-order-not-found";
+import { recordWorkOrderStatusChange } from "../../infrastructure/observability/work-order-metrics";
 
 export interface CancelWorkOrderInput {
   id: number;
@@ -19,9 +20,12 @@ export class CancelWorkOrder {
       throw new WorkOrderNotFound(input.id);
     }
 
+    const previousStatus = workOrder.toSnapshot().status;
     const canceledAt = input.canceledAt ?? new Date();
     workOrder.cancel(canceledAt);
     await this.workOrderRepository.save(workOrder);
+
+    recordWorkOrderStatusChange(previousStatus, workOrder.toSnapshot().status);
 
     return workOrder.toSnapshot();
   }

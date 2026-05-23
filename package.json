@@ -8,6 +8,7 @@
     "start:prod": "bun run dist/src/main.js",
     "health": "curl -f http://localhost:3000/health || exit 1",
     "build": "tsc -p tsconfig.build.json",
+    "smoke:deploy": "bun run scripts/deploy-smoke.ts",
     "arch:check": "bun run scripts/architecture-gate.ts check",
     "arch:graph": "bun run scripts/architecture-gate.ts graph",
     "test": "bun test",
@@ -22,12 +23,12 @@
   "dependencies": {
     "@hono/node-server": "^1.19.11",
     "@opentelemetry/api": "^1.9.0",
-    "@opentelemetry/auto-instrumentations-node": "^0.67.0",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.207.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.207.0",
+    "@opentelemetry/sdk-trace-base": "^2.2.0",
     "@opentelemetry/resources": "^2.2.0",
     "@opentelemetry/sdk-metrics": "^2.2.0",
-    "@opentelemetry/sdk-node": "^0.207.0",
+
     "@opentelemetry/semantic-conventions": "^1.38.0",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.12.8",

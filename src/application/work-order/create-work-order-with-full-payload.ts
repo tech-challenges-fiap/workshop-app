@@ -15,6 +15,7 @@ import type { ServiceTaskRepository } from "../../domain/service-task/repository
 import type { StockItemRepository } from "../../domain/stock-item/repository/stock-item-repository";
 import type { VehicleRepository } from "../../domain/vehicle/repository/vehicle-repository";
 import type { WorkOrderRepository } from "../../domain/work-order/repository/work-order-repository";
+import { recordWorkOrderStatusChange } from "../../infrastructure/observability/work-order-metrics";
 
 export interface CreateWorkOrderCustomerInput {
   name: string;
@@ -149,6 +150,8 @@ export class CreateWorkOrderWithFullPayload {
       workOrderInDiagnosis.startDiagnosis(input.createdAt);
       await deps.workOrderRepository.save(workOrderInDiagnosis);
 
+      recordWorkOrderStatusChange("RECEIVED", "DIAGNOSIS");
+
       for (const service of input.services) {
         const requiredItems = buildRequiredItems(service, partIdsBySku);
 
@@ -176,6 +179,8 @@ export class CreateWorkOrderWithFullPayload {
 
       workOrderReadyForApproval.completeDiagnosis(input.createdAt);
       await deps.workOrderRepository.save(workOrderReadyForApproval);
+
+      recordWorkOrderStatusChange("DIAGNOSIS", workOrderReadyForApproval.toSnapshot().status);
 
       return workOrderReadyForApproval.toSnapshot();
     });
