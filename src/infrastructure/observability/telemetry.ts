@@ -1,10 +1,10 @@
 import { metrics, trace } from "@opentelemetry/api";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { MeterProvider, PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { BatchSpanProcessor, BasicTracerProvider } from "@opentelemetry/sdk-trace-base";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
+import { FetchOTLPTraceExporter } from "./fetch-otlp-exporter";
 
 const serviceName = process.env.OTEL_SERVICE_NAME ?? process.env.DD_SERVICE ?? "workshop-app";
 const serviceVersion = process.env.DD_VERSION ?? process.env.npm_package_version ?? "0.1.0";
@@ -55,7 +55,7 @@ export function startTelemetry(): void {
 
   tracerProvider = new BasicTracerProvider({
     resource,
-    spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
+    spanProcessors: [new BatchSpanProcessor(new FetchOTLPTraceExporter())],
   });
   trace.setGlobalTracerProvider(tracerProvider);
   console.log("[telemetry] TracerProvider registered");
