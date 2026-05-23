@@ -78,7 +78,12 @@ repository and pull request read/write permission.
 
 ## Documentation
 
-- [Docs index](docs/README.md)
+- [Docs index](docs/README.md) — central hub; start here
 - [Architecture](docs/architecture.md)
 - [Development](docs/development.md)
+- [Component diagram](docs/component-diagram.md) — cloud topology (API Gateway, Lambda, EKS stag/prod, RDS, Datadog)
+- [Sequence diagrams](docs/sequence-diagrams.md) — authentication and work-order creation flows
+- [ER diagram](docs/er-diagram.md) — relational model and migration rationale
+- [RFCs](docs/rfcs/) — RFC-001 (AWS choice), RFC-002 (authentication strategy)
+- [ADRs](docs/adrs/) — ADR-001 (REST/Hono), ADR-002 (HPA autoscaling)
 - [AI contributor instructions](AGENTS.md)
