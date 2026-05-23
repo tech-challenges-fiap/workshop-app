@@ -9,10 +9,17 @@ import type { MiddlewareHandler } from "hono";
 
 import { getTracer } from "./telemetry";
 
+let firstSpanLogged = false;
+
 export const tracingMiddleware: MiddlewareHandler = async (c, next) => {
   const tracer = getTracer();
   const method = c.req.method;
   const path = c.req.path;
+
+  if (!firstSpanLogged) {
+    console.log(`[telemetry] creating first span: ${method} ${path}`);
+    firstSpanLogged = true;
+  }
 
   const parentContext = propagation.extract(context.active(), c.req.raw.headers, {
     get(carrier, key) {
