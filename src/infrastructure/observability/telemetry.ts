@@ -32,8 +32,11 @@ export function startTelemetry(): void {
   const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
   if (!endpoint || tracerProvider) {
+    console.log(`[telemetry] skipped: endpoint=${endpoint ?? "unset"}, exists=${!!tracerProvider}`);
     return;
   }
+
+  console.log(`[telemetry] init OTel — endpoint=${endpoint}, service=${serviceName}`);
 
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: serviceName,
@@ -46,6 +49,7 @@ export function startTelemetry(): void {
     spanProcessors: [new BatchSpanProcessor(new OTLPTraceExporter())],
   });
   trace.setGlobalTracerProvider(tracerProvider);
+  console.log("[telemetry] TracerProvider registered");
 
   meterProvider = new MeterProvider({
     resource,
@@ -57,6 +61,7 @@ export function startTelemetry(): void {
     ],
   });
   metrics.setGlobalMeterProvider(meterProvider);
+  console.log("[telemetry] MeterProvider registered, init complete");
 }
 
 export async function shutdownTelemetry(): Promise<void> {
