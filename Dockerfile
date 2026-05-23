@@ -33,7 +33,7 @@ COPY package.json bun.lock ./
 COPY --from=deps /app/bun.lock ./bun.lock
 RUN bun install --production --frozen-lockfile
 
-FROM oven/bun:1.3.6 AS runtime
+FROM node:22-slim AS runtime
 
 WORKDIR /app
 
@@ -47,4 +47,4 @@ COPY package.json ./
 EXPOSE 3000
 
 # Runtime stage starts the application only. Migrations run as a controlled Kubernetes Job.
-CMD ["bun", "run", "dist/src/main.js"]
+CMD ["node", "dist/src/main.js"]

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "bun run src/main.ts",
     "start": "bun run src/main.ts",
-    "start:prod": "bun run dist/src/main.js",
+    "start:prod": "node dist/src/main.js",
     "health": "curl -f http://localhost:3000/health || exit 1",
     "build": "tsc -p tsconfig.build.json",
     "smoke:deploy": "bun run scripts/deploy-smoke.ts",

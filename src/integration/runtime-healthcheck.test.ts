@@ -53,7 +53,7 @@ describe("Runtime operability contract", () => {
   it("defines a multi-stage Dockerfile with lean compiled runtime", () => {
     const dockerfile = readFileFromRoot("Dockerfile");
     const migrationJob = readFileFromRoot("k8s/base/migration-job.yaml");
-    const runtimeSection = extractSection(dockerfile, "FROM oven/bun:1.3.6 AS runtime\n");
+    const runtimeSection = extractSection(dockerfile, "FROM node:22-slim AS runtime\n");
 
     expect(dockerfile).toContain("FROM oven/bun:1.3.6 AS deps");
     expect(dockerfile).toContain("FROM deps AS build");
