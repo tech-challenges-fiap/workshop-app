@@ -120,7 +120,6 @@ jobs:
           kubectl kustomize "k8s/overlays/$OVERLAY" > /tmp/workshop-app.yaml
           sed -i "s#image: workshop-app:latest#image: $IMAGE_URI#g" /tmp/workshop-app.yaml
           kubectl -n "$NAMESPACE" apply -f /tmp/workshop-app.yaml
-          kubectl -n "$NAMESPACE" rollout restart deployment/workshop-app
           kubectl -n "$NAMESPACE" rollout status deployment/workshop-app --timeout=180s
 
       - name: Smoke test deployment
