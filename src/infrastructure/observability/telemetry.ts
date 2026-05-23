@@ -38,6 +38,15 @@ export function startTelemetry(): void {
 
   console.log(`[telemetry] init OTel — endpoint=${endpoint}, service=${serviceName}`);
 
+  // Connectivity probe: verify the OTLP endpoint is reachable using native fetch
+  fetch(`${endpoint}/v1/traces`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ resourceSpans: [] }),
+  })
+    .then((res) => console.log(`[telemetry] OTLP connectivity probe: status=${res.status}`))
+    .catch((err: unknown) => console.error(`[telemetry] OTLP connectivity probe FAILED:`, err));
+
   const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: serviceName,
     [ATTR_SERVICE_VERSION]: serviceVersion,
