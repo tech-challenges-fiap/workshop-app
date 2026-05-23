@@ -97,6 +97,7 @@ jobs:
           OVERLAY: ${{ github.ref_name == 'stag' && 'stag' || 'prod' }}
           NAMESPACE: ${{ github.ref_name == 'stag' && vars.K8S_NAMESPACE_STAG || vars.K8S_NAMESPACE_PROD }}
         run: |
+          kubectl -n "$NAMESPACE" scale deployment/workshop-app --replicas=0 --timeout=60s || true
           kubectl -n "$NAMESPACE" delete job workshop-app-migrations --ignore-not-found=true
           kubectl kustomize "k8s/overlays/$OVERLAY/migrations" > /tmp/workshop-app-migrations.yaml
           sed -i "s#image: workshop-app:latest#image: $IMAGE_URI#g" /tmp/workshop-app-migrations.yaml
