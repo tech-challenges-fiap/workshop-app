@@ -12,8 +12,10 @@ import { registerWorkOrderRoutes } from "../presentation/work-orders";
 import { registerWebhookWorkOrderEventRoutes } from "../presentation/webhooks/work-order-events";
 import { ensureDatabaseConnection } from "../infrastructure/db";
 import { requestLoggingMiddleware } from "../infrastructure/observability/logger";
+import { tracingMiddleware } from "../infrastructure/observability/tracing-middleware";
 
 export function registerRoutes(app: Hono, appDeps: ApplicationDeps): void {
+  app.use("*", tracingMiddleware);
   app.use("*", requestLoggingMiddleware);
 
   registerOpenApiRoutes(app);
