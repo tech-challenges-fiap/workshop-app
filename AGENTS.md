@@ -20,6 +20,17 @@ Out of scope:
 - infrastructure provisioning
 - shared runtime platform bootstrap
 
+
+## OpenSpec Governance
+
+- Before touching any in-scope implementation, infrastructure, contract, schema, or workflow path, confirm an OpenSpec change exists at `openspec/changes/<change-id>/` with `proposal.md`, `tasks.md`, and required spec deltas.
+- If no change exists for the requested work, stop and ask Hermes/Void for the change-id instead of inventing scope.
+- Run `npx --yes @fission-ai/openspec validate <change-id> --strict` before implementing and again before opening the PR.
+- Implement only tasks listed in the approved OpenSpec change; if implementation reveals new scope, update the change first.
+- Reference the change-id in the PR title and body.
+- After the PR merges into `stag`, archive the change with `npx --yes @fission-ai/openspec archive <change-id>` in the same or a follow-up PR.
+- Exemptions: typo-only documentation fixes and dependency lockfile refreshes with no behavior, contract, infrastructure, or workflow change.
+
 ## Read First
 
 - `README.md`
