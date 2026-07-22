@@ -1,11 +1,14 @@
 import { WorkOrder } from "../../domain/work-order/aggregate/work-order";
 import type { WorkOrderRepository } from "../../domain/work-order/repository/work-order-repository";
 import { WorkOrderNotFound } from "../../domain/work-order/domain-error/work-order-not-found";
-import { recordWorkOrderStatusChange } from "../../infrastructure/observability/work-order-metrics";
 import {
   buildCompleteDiagnosisNotificationInput,
   type CompleteDiagnosisNotificationDeps,
 } from "./complete-diagnosis/build-notification-payload";
+import {
+  noopWorkOrderMetrics,
+  type WorkOrderMetrics,
+} from "../../domain/work-order/observability/work-order-metrics";
 
 export interface CompleteDiagnosisInput {
   id: number;
@@ -18,6 +21,7 @@ export class CompleteDiagnosis {
   constructor(
     private readonly workOrderRepository: WorkOrderRepository,
     private readonly notificationDeps?: CompleteDiagnosisNotificationDeps,
+    private readonly metrics: WorkOrderMetrics = noopWorkOrderMetrics,
   ) {}
 
   public async execute(input: CompleteDiagnosisInput): Promise<CompleteDiagnosisOutput> {
@@ -33,7 +37,7 @@ export class CompleteDiagnosis {
     await this.workOrderRepository.save(workOrder);
 
     const snapshot = workOrder.toSnapshot();
-    recordWorkOrderStatusChange(previousStatus, snapshot.status);
+    this.metrics.recordStatusChange(previousStatus, snapshot.status);
     await this.trySendNotification(snapshot);
 
     return snapshot;

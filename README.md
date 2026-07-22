@@ -12,12 +12,23 @@ RDS provisioning.
 
 ## What this repository owns
 
+`workshop-app` is the **OS Service** (Ordem de Serviço) for Phase 4 of the
+FIAP Tech Challenge. Its primary domain is the work-order lifecycle.
+
 - Bun-based Hono HTTP API.
-- Workshop domain and application use cases.
+- Work-order domain and application use cases (`work_orders`,
+  `work_order_status_history` are primary data — sole system of record).
+- Read-model projections for `persons` and `vehicles` needed by work-order
+  response payloads (populated via seed or replication; never mutated by OS
+  Service business logic).
 - Drizzle schema, SQL migrations, seeds, and PostgreSQL repositories.
 - External JWT validation for tokens issued by `workshop-edge`.
 - JSON request logs, request correlation, and OpenTelemetry bootstrap.
 - Docker image and Kubernetes manifests for `stag` and `prod`.
+
+**Cross-service boundary**: `workshop-app` MUST NOT open a direct database
+connection to Billing Service or Execution Service databases. Those services
+consume work-order state via events or the `workshop-app` HTTP API.
 
 ## Runtime contract
 
@@ -57,6 +68,20 @@ Default local runtime:
 
 PostgreSQL configuration comes from `DATABASE_URL` or the `POSTGRES_*`
 variables documented in `.env.example`.
+
+RabbitMQ messaging is optional in the current Phase 4 foundation. Configure
+`RABBITMQ_URL`, `RABBITMQ_EXCHANGE`, `RABBITMQ_WORK_ORDER_EVENTS_QUEUE`,
+`RABBITMQ_SAGA_EVENTS_QUEUE`, and `RABBITMQ_CONSUMERS_ENABLED` when a broker is
+available; leaving `RABBITMQ_URL` empty keeps local composition and unit tests
+broker-free.
+
+The OS-owned distributed-flow layer uses the local work-order saga plus the
+existing event publisher boundary to emit request intents for Billing
+authorization, Execution start, and distributed compensation. Inbound Billing
+and Execution saga events are handled idempotently by `eventId` and preserve the
+inbound `correlationId` on outbound intents. This repository does not claim a
+live broker end-to-end deployment and does not access Billing or Execution
+databases directly.
 
 ## Delivery flow
 

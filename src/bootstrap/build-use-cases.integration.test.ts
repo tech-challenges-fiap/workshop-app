@@ -10,6 +10,14 @@ const TEST_CONFIG: AppRuntimeConfig = {
   beeceptorNotificationUrl: "https://example.com/notify",
   appPort: 3000,
   jwtSecret: "integration-secret",
+  jwtIssuer: "workshop-edge",
+  jwtAudience: "workshop-app",
+  appEnv: "test",
+  rabbitMqUrl: "",
+  rabbitMqExchange: "workshop.os.events",
+  rabbitMqWorkOrderEventsQueue: "workshop.os.work-order-events",
+  rabbitMqSagaEventsQueue: "workshop.os.saga-events",
+  rabbitMqConsumersEnabled: false,
 };
 
 describe("dependency builder integration", () => {

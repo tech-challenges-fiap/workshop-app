@@ -6,9 +6,14 @@ import { VehicleRepositoryPostgres } from "../infrastructure/vehicle/vehicle-rep
 import { PersonRepositoryPostgres } from "../infrastructure/person/person-repository-postgres";
 import { WorkOrderRepositoryPostgres } from "../infrastructure/work-order/work-order-repository-postgres";
 import { WorkOrderWebhookEventRepositoryPostgres } from "../infrastructure/work-order/work-order-webhook-event-repository-postgres";
+import { WorkOrderSagaRepositoryPostgres } from "../infrastructure/work-order/work-order-saga-repository-postgres";
 import { BeeceptorNotification } from "../infrastructure/notification/beeceptor-notification";
 import { NoopNotification } from "../infrastructure/notification/noop-notification";
 import type { Notification } from "../application/notification/notification";
+import {
+  NoopWorkOrderEventPublisher,
+  type WorkOrderEventPublisher,
+} from "../domain/work-order/events/work-order-event-publisher";
 
 export interface InfrastructureDeps {
   stockItemRepository: StockItemRepositoryPostgres;
@@ -18,6 +23,8 @@ export interface InfrastructureDeps {
   personRepository: PersonRepositoryPostgres;
   workOrderRepository: WorkOrderRepositoryPostgres;
   workOrderWebhookEventRepository: WorkOrderWebhookEventRepositoryPostgres;
+  workOrderSagaRepository: WorkOrderSagaRepositoryPostgres;
+  workOrderEventPublisher: WorkOrderEventPublisher;
   notification: Notification;
 }
 
@@ -32,6 +39,8 @@ export function buildInfrastructureDeps(config: AppRuntimeConfig): Infrastructur
     personRepository: new PersonRepositoryPostgres(),
     workOrderRepository: new WorkOrderRepositoryPostgres(),
     workOrderWebhookEventRepository: new WorkOrderWebhookEventRepositoryPostgres(),
+    workOrderSagaRepository: new WorkOrderSagaRepositoryPostgres(),
+    workOrderEventPublisher: new NoopWorkOrderEventPublisher(),
     notification:
       notificationUrl.length > 0
         ? new BeeceptorNotification(notificationUrl)
