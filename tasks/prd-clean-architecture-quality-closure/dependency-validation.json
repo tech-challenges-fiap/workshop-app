@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19T11:22:04.477Z",
+  "generatedAt": "2026-07-26T18:08:02.152Z",
   "engine": "offline-fallback",
   "preferredEngine": "dependency-cruiser",
   "configurationFile": ".dependency-cruiser.cjs",
@@ -11,10 +11,10 @@
     "src/infrastructure"
   ],
   "summary": {
-    "scannedFiles": 160,
-    "dependenciesAnalyzed": 506,
+    "scannedFiles": 163,
+    "dependenciesAnalyzed": 512,
     "skippedImports": 68,
-    "allowedEdgeCount": 460,
+    "allowedEdgeCount": 466,
     "acceptedEdgeCount": 46,
     "violationCount": 0
   },
@@ -24,8 +24,8 @@
     "presentation->domain": 41,
     "presentation->infrastructure": 2,
     "application->presentation": 0,
-    "application->application": 25,
-    "application->domain": 243,
+    "application->application": 27,
+    "application->domain": 247,
     "application->infrastructure": 0,
     "domain->presentation": 0,
     "domain->application": 0,

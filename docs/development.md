@@ -33,6 +33,7 @@ Validate the repository:
 ```bash
 bun run lint
 bun test
+bun run test:bdd
 bun run build
 kubectl kustomize k8s/overlays/stag >/tmp/workshop-app-stag.yaml
 kubectl kustomize k8s/overlays/prod >/tmp/workshop-app-prod.yaml
@@ -44,6 +45,7 @@ docker build --tag workshop-app:local .
 - `bun run dev` starts the Bun application from `src/main.ts`.
 - `bun run lint` runs ESLint.
 - `bun test` executes the Bun test suite.
+- `bun run test:bdd` runs the Cucumber/Gherkin BDD scenarios under `features/` via `bunx --bun cucumber-js` (the `--bun` flag is required: plain `bunx cucumber-js` resolves to the system Node.js through the package's shebang and fails to resolve the extensionless TypeScript step-definition imports).
 - `bun run build` compiles TypeScript into `dist/`.
 - `bun run db:migrate` applies SQL migrations from the app repository.
 - `bun run db:seed` applies seed data for local or controlled environments.

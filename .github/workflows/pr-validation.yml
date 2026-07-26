@@ -67,6 +67,9 @@ jobs:
       - name: Test
         run: bun test
 
+      - name: BDD (Cucumber)
+        run: bun run test:bdd
+
   build:
     name: build
     runs-on: ubuntu-latest

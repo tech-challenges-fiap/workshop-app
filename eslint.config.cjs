@@ -19,6 +19,7 @@ module.exports = [
       "bun.lock",
       "package-lock.json",
       "docs/fase-4/*.ts",
+      "features/**",
     ],
   },
   {
