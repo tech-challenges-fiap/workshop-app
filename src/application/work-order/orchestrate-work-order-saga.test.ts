@@ -1,47 +1,8 @@
 import { describe, expect, it } from "bun:test";
 
 import { OrchestrateWorkOrderSaga } from "./orchestrate-work-order-saga";
-import type {
-  RegisterWorkOrderSagaEventInput,
-  WorkOrderSagaRepository,
-} from "../../domain/work-order/repository/work-order-saga-repository";
-import {
-  WorkOrderSaga,
-  WorkOrderSagaEventType,
-  WorkOrderSagaState,
-} from "../../domain/work-order/saga/work-order-saga";
-
-class InMemoryWorkOrderSagaRepository implements WorkOrderSagaRepository {
-  private readonly sagasByWorkOrderId = new Map<number, WorkOrderSaga>();
-  private readonly events = new Map<string, RegisterWorkOrderSagaEventInput>();
-
-  public async findByWorkOrderId(workOrderId: number): Promise<WorkOrderSaga | null> {
-    return this.sagasByWorkOrderId.get(workOrderId) ?? null;
-  }
-
-  public async create(saga: WorkOrderSaga): Promise<WorkOrderSaga> {
-    this.sagasByWorkOrderId.set(saga.toSnapshot().workOrderId, saga);
-    return saga;
-  }
-
-  public async save(saga: WorkOrderSaga): Promise<WorkOrderSaga> {
-    this.sagasByWorkOrderId.set(saga.toSnapshot().workOrderId, saga);
-    return saga;
-  }
-
-  public async hasProcessedEvent(eventId: string): Promise<boolean> {
-    return this.events.has(eventId);
-  }
-
-  public async recordProcessedEvent(input: RegisterWorkOrderSagaEventInput): Promise<boolean> {
-    if (this.events.has(input.eventId)) {
-      return false;
-    }
-
-    this.events.set(input.eventId, input);
-    return true;
-  }
-}
+import { InMemoryWorkOrderSagaRepository } from "./test-support";
+import { WorkOrderSagaEventType, WorkOrderSagaState } from "../../domain/work-order/saga/work-order-saga";
 
 describe("OrchestrateWorkOrderSaga", () => {
   it("starts and persists a saga for a work order", async () => {

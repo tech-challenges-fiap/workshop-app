@@ -85,6 +85,52 @@ inbound `correlationId` on outbound intents. This repository does not claim a
 live broker end-to-end deployment and does not access Billing or Execution
 databases directly.
 
+## Estratégia do Saga Pattern
+
+`workshop-app` implementa o fluxo distribuído da Ordem de Serviço (OS) como um
+**Saga orquestrada (central)**, e não como uma Saga coreografada. A decisão é
+uma consequência direta de decisões arquiteturais já adotadas neste
+repositório, não uma preferência genérica:
+
+- **A OS Service já é a única dona do ciclo de vida da OS.** As tabelas
+  `work_orders` e `work_order_status_history` têm o `workshop-app` como único
+  escritor (ver "Data Ownership" em `docs/architecture.md`), e o repositório
+  não pode abrir conexão direta com os bancos de Billing ou Execution. Como a
+  máquina de estados da saga (`WorkOrderSaga`, em
+  `src/domain/work-order/saga/work-order-saga.ts`) já vive dentro da OS
+  Service, orquestrar as transições no mesmo lugar evita duplicar essa
+  propriedade em múltiplos serviços via coreografia implícita.
+- **Existe um único coordenador de transições e efeitos colaterais.**
+  `OrchestrateWorkOrderSaga`
+  (`src/application/work-order/orchestrate-work-order-saga.ts`) é o único
+  ponto que aplica uma transição na saga, decide se um evento já foi
+  processado (`hasProcessedEvent`/`recordProcessedEvent`, garantindo
+  idempotência por `eventId`) e decide qual intent distribuído publicar em
+  seguida (`resolveDistributedIntentEventName`: autorização de billing,
+  execução ou compensação). Numa Saga coreografada, essa mesma decisão estaria
+  espalhada entre Billing Service e Execution Service, cada um reagindo a
+  eventos do outro sem um dono único da política de compensação.
+- **Compensação centralizada e auditável.** Quando Billing rejeita a
+  aprovação ou Execution falha, a saga transita para `COMPENSATING` e o motivo
+  (`compensationReason`) é persistido antes de publicar
+  `os.work-order.compensation-requested.v1`. Com orquestração, essa regra de
+  "o que aciona compensação e quando" é testada em um único lugar
+  (`orchestrate-work-order-saga.test.ts`,
+  `work-order-distributed-flow.test.ts` e o cenário BDD em
+  `features/work-order-happy-path.feature`), em vez de depender da composição
+  correta de handlers espalhados por três repositórios.
+- **Testabilidade sem broker.** Por ter um orquestrador central e explícito, o
+  fluxo inteiro (OS aberta → orçamento aprovado → execução concluída →
+  `COMPLETED`) pode ser exercitado de ponta a ponta com um publisher e um
+  repositório em memória, sem depender de um RabbitMQ real subindo três
+  serviços — o que seria necessário para testar uma coreografia completa.
+- **Trade-off aceito.** A orquestração cria um acoplamento lógico da OS
+  Service ao conhecimento da política de compensação entre os três domínios.
+  Isso é aceitável porque a OS Service já é a dona do estado da Ordem de
+  Serviço nesta fase (Fase 4); coreografia adicionaria complexidade
+  distribuída (fluxos implícitos, difíceis de testar e de auditar) sem
+  remover essa propriedade que já está centralizada.
+
 ## Delivery flow
 
 - `feature/* -> stag`: Pull Request validated by lint, tests, build,
