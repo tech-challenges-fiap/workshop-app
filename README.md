@@ -2,6 +2,8 @@
 
 [![prod/stag](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftech-challenges-fiap%2Fworkshop-app%2Fbadges%2Fbadges%2Fprod-stag-sync.json)](https://github.com/tech-challenges-fiap/workshop-app/compare/prod...stag)
 
+> Cloud-native workshop management API — Bun/Hono on EKS with full observability via Datadog.
+
 `workshop-app` is the main application repository for the `workshop` service.
 It owns the HTTP API, domain and application logic, PostgreSQL schema
 evolution, migrations, seeds, runtime packaging, and Kubernetes deployment
