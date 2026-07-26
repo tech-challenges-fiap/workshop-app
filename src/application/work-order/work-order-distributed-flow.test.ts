@@ -2,62 +2,16 @@ import { describe, expect, it } from "bun:test";
 
 import { HandleInboundWorkOrderSagaEvent } from "./handle-inbound-work-order-saga-event";
 import { OrchestrateWorkOrderSaga } from "./orchestrate-work-order-saga";
-import type { WorkOrderEventPublisher } from "../../domain/work-order/events/work-order-event-publisher";
+import {
+  InMemoryWorkOrderSagaRepository,
+  RecordingWorkOrderEventPublisher,
+} from "./test-support";
 import {
   createWorkOrderEvent,
   InboundWorkOrderSagaEventName,
   OsWorkOrderEventName,
-  type WorkOrderEventEnvelope,
 } from "../../domain/work-order/events/work-order-events";
-import type {
-  RegisterWorkOrderSagaEventInput,
-  WorkOrderSagaRepository,
-} from "../../domain/work-order/repository/work-order-saga-repository";
-import {
-  WorkOrderSaga,
-  WorkOrderSagaEventType,
-  WorkOrderSagaState,
-} from "../../domain/work-order/saga/work-order-saga";
-
-class InMemoryWorkOrderSagaRepository implements WorkOrderSagaRepository {
-  private readonly sagasByWorkOrderId = new Map<number, WorkOrderSaga>();
-  private readonly events = new Map<string, RegisterWorkOrderSagaEventInput>();
-
-  public async findByWorkOrderId(workOrderId: number): Promise<WorkOrderSaga | null> {
-    return this.sagasByWorkOrderId.get(workOrderId) ?? null;
-  }
-
-  public async create(saga: WorkOrderSaga): Promise<WorkOrderSaga> {
-    this.sagasByWorkOrderId.set(saga.toSnapshot().workOrderId, saga);
-    return saga;
-  }
-
-  public async save(saga: WorkOrderSaga): Promise<WorkOrderSaga> {
-    this.sagasByWorkOrderId.set(saga.toSnapshot().workOrderId, saga);
-    return saga;
-  }
-
-  public async hasProcessedEvent(eventId: string): Promise<boolean> {
-    return this.events.has(eventId);
-  }
-
-  public async recordProcessedEvent(input: RegisterWorkOrderSagaEventInput): Promise<boolean> {
-    if (this.events.has(input.eventId)) {
-      return false;
-    }
-
-    this.events.set(input.eventId, input);
-    return true;
-  }
-}
-
-class RecordingWorkOrderEventPublisher implements WorkOrderEventPublisher {
-  public readonly events: WorkOrderEventEnvelope[] = [];
-
-  public async publish(event: WorkOrderEventEnvelope): Promise<void> {
-    this.events.push(event);
-  }
-}
+import { WorkOrderSagaEventType, WorkOrderSagaState } from "../../domain/work-order/saga/work-order-saga";
 
 function buildFlow(): {
   orchestrator: OrchestrateWorkOrderSaga;
