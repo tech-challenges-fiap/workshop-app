@@ -13,7 +13,13 @@ const scopedWorkOrderNamingFiles = [
 /** @type {import("eslint").Linter.FlatConfig[]} */
 module.exports = [
   {
-    ignores: ["dist/**", "node_modules/**", "bun.lock", "package-lock.json"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "bun.lock",
+      "package-lock.json",
+      "docs/fase-4/*.ts",
+    ],
   },
   {
     files: ["**/*.ts", "**/*.tsx"],

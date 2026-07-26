@@ -1,0 +1,508 @@
+{
+  "generatedAt": "2026-07-19T11:22:04.477Z",
+  "engine": "offline-fallback",
+  "preferredEngine": "dependency-cruiser",
+  "configurationFile": ".dependency-cruiser.cjs",
+  "policyDocument": "docs/architecture/clean-architecture-layered.md",
+  "scope": [
+    "src/presentation",
+    "src/application",
+    "src/domain",
+    "src/infrastructure"
+  ],
+  "summary": {
+    "scannedFiles": 160,
+    "dependenciesAnalyzed": 506,
+    "skippedImports": 68,
+    "allowedEdgeCount": 460,
+    "acceptedEdgeCount": 46,
+    "violationCount": 0
+  },
+  "edgeCounts": {
+    "presentation->presentation": 13,
+    "presentation->application": 46,
+    "presentation->domain": 41,
+    "presentation->infrastructure": 2,
+    "application->presentation": 0,
+    "application->application": 25,
+    "application->domain": 243,
+    "application->infrastructure": 0,
+    "domain->presentation": 0,
+    "domain->application": 0,
+    "domain->domain": 50,
+    "domain->infrastructure": 0,
+    "infrastructure->presentation": 0,
+    "infrastructure->application": 3,
+    "infrastructure->domain": 45,
+    "infrastructure->infrastructure": 38
+  },
+  "acceptedDispositions": [
+    {
+      "id": "ARCH-DISP-001",
+      "fromFile": "src/presentation/stock-items.ts",
+      "toLayer": "domain",
+      "rationale": "Presentation still maps domain exceptions directly; task 3.0 will move this behind focused HTTP helpers.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-002",
+      "fromFile": "src/presentation/vehicles.ts",
+      "toLayer": "domain",
+      "rationale": "Presentation still maps domain exceptions directly; task 3.0 will move this behind focused HTTP helpers.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-003",
+      "fromFile": "src/presentation/person.ts",
+      "toLayer": "domain",
+      "rationale": "Presentation still maps domain exceptions directly; task 3.0 will move this behind focused HTTP helpers.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-004",
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toLayer": "domain",
+      "rationale": "Work-order presentation now centralizes domain exception mapping in a focused HTTP helper while the accepted disposition remains tracked.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-005",
+      "fromFile": "src/presentation/services.ts",
+      "toLayer": "domain",
+      "rationale": "Presentation still maps domain exceptions directly; task 3.0 will move this behind focused HTTP helpers.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-006",
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toLayer": "domain",
+      "rationale": "Presentation still maps domain exceptions directly; task 3.0 will move this behind focused HTTP helpers.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-007",
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toLayer": "domain",
+      "rationale": "Webhook route still maps domain exceptions and one status value directly; task 3.0 will move this behind focused HTTP helpers.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-008",
+      "fromFile": "src/presentation/auth.ts",
+      "toLayer": "infrastructure",
+      "rationale": "Token signing is still invoked directly from the auth route; task 3.0 will isolate transport concerns from the adapter.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-009",
+      "fromFile": "src/presentation/middleware/auth.ts",
+      "toLayer": "infrastructure",
+      "rationale": "JWT verification is still invoked directly from middleware; task 3.0 will isolate transport concerns from the adapter.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-010",
+      "fromFile": "src/infrastructure/notification/beeceptor-notification.ts",
+      "toLayer": "application",
+      "rationale": "The adapter still implements an application-layer notification contract; task 4.0 will relocate the stable port contract.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-012",
+      "fromFile": "src/infrastructure/notification/noop-notification.ts",
+      "toLayer": "application",
+      "rationale": "The no-op adapter implements the same application-layer notification contract as the Beeceptor adapter.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    },
+    {
+      "id": "ARCH-DISP-011",
+      "fromFile": "src/infrastructure/work-order/create-work-order-with-full-payload-unit-of-work-postgres.ts",
+      "toLayer": "application",
+      "rationale": "The transaction adapter still imports the application unit-of-work contract; task 4.0 will relocate the stable port contract.",
+      "owner": "quality-closure-task-2.0",
+      "dueDate": "2026-03-31"
+    }
+  ],
+  "acceptedEdges": [
+    {
+      "fromFile": "src/infrastructure/notification/beeceptor-notification.ts",
+      "toFile": "src/application/notification/notification.ts",
+      "importPath": "../../application/notification/notification",
+      "fromLayer": "infrastructure",
+      "toLayer": "application",
+      "dispositionId": "ARCH-DISP-010"
+    },
+    {
+      "fromFile": "src/infrastructure/notification/noop-notification.ts",
+      "toFile": "src/application/notification/notification.ts",
+      "importPath": "../../application/notification/notification",
+      "fromLayer": "infrastructure",
+      "toLayer": "application",
+      "dispositionId": "ARCH-DISP-012"
+    },
+    {
+      "fromFile": "src/infrastructure/work-order/create-work-order-with-full-payload-unit-of-work-postgres.ts",
+      "toFile": "src/application/work-order/create-work-order-with-full-payload.ts",
+      "importPath": "../../application/work-order/create-work-order-with-full-payload",
+      "fromLayer": "infrastructure",
+      "toLayer": "application",
+      "dispositionId": "ARCH-DISP-011"
+    },
+    {
+      "fromFile": "src/presentation/middleware/auth.ts",
+      "toFile": "src/infrastructure/auth/jwt.ts",
+      "importPath": "../../infrastructure/auth/jwt",
+      "fromLayer": "presentation",
+      "toLayer": "infrastructure",
+      "dispositionId": "ARCH-DISP-009"
+    },
+    {
+      "fromFile": "src/presentation/middleware/auth.ts",
+      "toFile": "src/infrastructure/observability/telemetry.ts",
+      "importPath": "../../infrastructure/observability/telemetry",
+      "fromLayer": "presentation",
+      "toLayer": "infrastructure",
+      "dispositionId": "ARCH-DISP-009"
+    },
+    {
+      "fromFile": "src/presentation/person.ts",
+      "toFile": "src/domain/person/domain-error/invalid-person-document.ts",
+      "importPath": "../domain/person/domain-error/invalid-person-document",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-003"
+    },
+    {
+      "fromFile": "src/presentation/person.ts",
+      "toFile": "src/domain/person/domain-error/person-document-already-exists.ts",
+      "importPath": "../domain/person/domain-error/person-document-already-exists",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-003"
+    },
+    {
+      "fromFile": "src/presentation/person.ts",
+      "toFile": "src/domain/person/domain-error/person-not-found.ts",
+      "importPath": "../domain/person/domain-error/person-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-003"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/service-task/domain-error/service-task-not-found.ts",
+      "importPath": "../domain/service-task/domain-error/service-task-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/service-task/domain-error/service-task-status-transition-not-allowed.ts",
+      "importPath": "../domain/service-task/domain-error/service-task-status-transition-not-allowed",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/service/domain-error/service-not-found.ts",
+      "importPath": "../domain/service/domain-error/service-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/stock-item/domain-error/insufficient-stock.ts",
+      "importPath": "../domain/stock-item/domain-error/insufficient-stock",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/stock-item/domain-error/stock-item-not-found.ts",
+      "importPath": "../domain/stock-item/domain-error/stock-item-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-not-found.ts",
+      "importPath": "../domain/work-order/domain-error/work-order-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-public-token-expired.ts",
+      "importPath": "../domain/work-order/domain-error/work-order-public-token-expired",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-public-token-not-found.ts",
+      "importPath": "../domain/work-order/domain-error/work-order-public-token-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-service-task-creation-not-allowed.ts",
+      "importPath": "../domain/work-order/domain-error/work-order-service-task-creation-not-allowed",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-service-task-not-found.ts",
+      "importPath": "../domain/work-order/domain-error/work-order-service-task-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/service-tasks.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-status-transition-not-allowed.ts",
+      "importPath": "../domain/work-order/domain-error/work-order-status-transition-not-allowed",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-006"
+    },
+    {
+      "fromFile": "src/presentation/services.ts",
+      "toFile": "src/domain/service/domain-error/invalid-service-price.ts",
+      "importPath": "../domain/service/domain-error/invalid-service-price",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-005"
+    },
+    {
+      "fromFile": "src/presentation/services.ts",
+      "toFile": "src/domain/service/domain-error/service-not-found.ts",
+      "importPath": "../domain/service/domain-error/service-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-005"
+    },
+    {
+      "fromFile": "src/presentation/services.ts",
+      "toFile": "src/domain/stock-item/domain-error/stock-item-not-found.ts",
+      "importPath": "../domain/stock-item/domain-error/stock-item-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-005"
+    },
+    {
+      "fromFile": "src/presentation/stock-items.ts",
+      "toFile": "src/domain/stock-item/domain-error/insufficient-stock.ts",
+      "importPath": "../domain/stock-item/domain-error/insufficient-stock",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-001"
+    },
+    {
+      "fromFile": "src/presentation/stock-items.ts",
+      "toFile": "src/domain/stock-item/domain-error/invalid-stock-item-price.ts",
+      "importPath": "../domain/stock-item/domain-error/invalid-stock-item-price",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-001"
+    },
+    {
+      "fromFile": "src/presentation/stock-items.ts",
+      "toFile": "src/domain/stock-item/domain-error/sku-already-exists.ts",
+      "importPath": "../domain/stock-item/domain-error/sku-already-exists",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-001"
+    },
+    {
+      "fromFile": "src/presentation/stock-items.ts",
+      "toFile": "src/domain/stock-item/domain-error/stock-item-not-found.ts",
+      "importPath": "../domain/stock-item/domain-error/stock-item-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-001"
+    },
+    {
+      "fromFile": "src/presentation/vehicles.ts",
+      "toFile": "src/domain/person/domain-error/person-not-found.ts",
+      "importPath": "../domain/person/domain-error/person-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-002"
+    },
+    {
+      "fromFile": "src/presentation/vehicles.ts",
+      "toFile": "src/domain/vehicle/domain-error/plate-already-exists.ts",
+      "importPath": "../domain/vehicle/domain-error/plate-already-exists",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-002"
+    },
+    {
+      "fromFile": "src/presentation/vehicles.ts",
+      "toFile": "src/domain/vehicle/domain-error/vehicle-not-found.ts",
+      "importPath": "../domain/vehicle/domain-error/vehicle-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-002"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/service-task/domain-error/service-task-not-found.ts",
+      "importPath": "../../domain/service-task/domain-error/service-task-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/service-task/domain-error/service-task-status-transition-not-allowed.ts",
+      "importPath": "../../domain/service-task/domain-error/service-task-status-transition-not-allowed",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/stock-item/domain-error/insufficient-stock.ts",
+      "importPath": "../../domain/stock-item/domain-error/insufficient-stock",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/stock-item/domain-error/stock-item-not-found.ts",
+      "importPath": "../../domain/stock-item/domain-error/stock-item-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-not-found.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-service-task-not-found.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-service-task-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-status-transition-not-allowed.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-status-transition-not-allowed",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-webhook-event-invalid.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-webhook-event-invalid",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/webhooks/work-order-events.ts",
+      "toFile": "src/domain/work-order/value-object/work-order-status.ts",
+      "importPath": "../../domain/work-order/value-object/work-order-status",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-007"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/person/domain-error/invalid-person-document.ts",
+      "importPath": "../../domain/person/domain-error/invalid-person-document",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/person/domain-error/person-document-already-exists.ts",
+      "importPath": "../../domain/person/domain-error/person-document-already-exists",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/stock-item/domain-error/sku-already-exists.ts",
+      "importPath": "../../domain/stock-item/domain-error/sku-already-exists",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/vehicle/domain-error/plate-already-exists.ts",
+      "importPath": "../../domain/vehicle/domain-error/plate-already-exists",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-not-found.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-public-token-expired.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-public-token-expired",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-public-token-not-found.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-public-token-not-found",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    },
+    {
+      "fromFile": "src/presentation/work-orders/error-mapping.ts",
+      "toFile": "src/domain/work-order/domain-error/work-order-status-transition-not-allowed.ts",
+      "importPath": "../../domain/work-order/domain-error/work-order-status-transition-not-allowed",
+      "fromLayer": "presentation",
+      "toLayer": "domain",
+      "dispositionId": "ARCH-DISP-004"
+    }
+  ],
+  "violations": []
+}

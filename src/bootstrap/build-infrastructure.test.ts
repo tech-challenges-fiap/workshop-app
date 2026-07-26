@@ -9,8 +9,10 @@ import { VehicleRepositoryPostgres } from "../infrastructure/vehicle/vehicle-rep
 import { PersonRepositoryPostgres } from "../infrastructure/person/person-repository-postgres";
 import { WorkOrderRepositoryPostgres } from "../infrastructure/work-order/work-order-repository-postgres";
 import { WorkOrderWebhookEventRepositoryPostgres } from "../infrastructure/work-order/work-order-webhook-event-repository-postgres";
+import { WorkOrderSagaRepositoryPostgres } from "../infrastructure/work-order/work-order-saga-repository-postgres";
 import { BeeceptorNotification } from "../infrastructure/notification/beeceptor-notification";
 import { NoopNotification } from "../infrastructure/notification/noop-notification";
+import { NoopWorkOrderEventPublisher } from "../domain/work-order/events/work-order-event-publisher";
 
 const TEST_CONFIG: AppRuntimeConfig = {
   adminUsername: "admin",
@@ -18,6 +20,14 @@ const TEST_CONFIG: AppRuntimeConfig = {
   beeceptorNotificationUrl: "https://example.com/notify",
   appPort: 3000,
   jwtSecret: "secret",
+  jwtIssuer: "workshop-edge",
+  jwtAudience: "workshop-app",
+  appEnv: "test",
+  rabbitMqUrl: "",
+  rabbitMqExchange: "workshop.os.events",
+  rabbitMqWorkOrderEventsQueue: "workshop.os.work-order-events",
+  rabbitMqSagaEventsQueue: "workshop.os.saga-events",
+  rabbitMqConsumersEnabled: false,
 };
 
 describe("buildInfrastructureDeps", () => {
@@ -33,6 +43,8 @@ describe("buildInfrastructureDeps", () => {
     expect(deps.workOrderWebhookEventRepository).toBeInstanceOf(
       WorkOrderWebhookEventRepositoryPostgres,
     );
+    expect(deps.workOrderSagaRepository).toBeInstanceOf(WorkOrderSagaRepositoryPostgres);
+    expect(deps.workOrderEventPublisher).toBeInstanceOf(NoopWorkOrderEventPublisher);
     expect(deps.notification).toBeInstanceOf(BeeceptorNotification);
   });
 

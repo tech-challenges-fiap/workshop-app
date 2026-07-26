@@ -18,6 +18,11 @@ describe("loadRuntimeConfig", () => {
     delete process.env.JWT_ISSUER;
     delete process.env.JWT_AUDIENCE;
     delete process.env.APP_ENV;
+    delete process.env.RABBITMQ_URL;
+    delete process.env.RABBITMQ_EXCHANGE;
+    delete process.env.RABBITMQ_WORK_ORDER_EVENTS_QUEUE;
+    delete process.env.RABBITMQ_SAGA_EVENTS_QUEUE;
+    delete process.env.RABBITMQ_CONSUMERS_ENABLED;
 
     const config = loadRuntimeConfig();
 
@@ -30,6 +35,11 @@ describe("loadRuntimeConfig", () => {
       jwtIssuer: "workshop-edge",
       jwtAudience: "workshop-app",
       appEnv: "test",
+      rabbitMqUrl: "",
+      rabbitMqExchange: "workshop.os.events",
+      rabbitMqWorkOrderEventsQueue: "workshop.os.work-order-events",
+      rabbitMqSagaEventsQueue: "workshop.os.saga-events",
+      rabbitMqConsumersEnabled: false,
     });
   });
 
@@ -42,6 +52,11 @@ describe("loadRuntimeConfig", () => {
     process.env.JWT_ISSUER = "custom-edge";
     process.env.JWT_AUDIENCE = "custom-app";
     process.env.APP_ENV = "stag";
+    process.env.RABBITMQ_URL = "amqp://rabbitmq:5672";
+    process.env.RABBITMQ_EXCHANGE = "custom.os.events";
+    process.env.RABBITMQ_WORK_ORDER_EVENTS_QUEUE = "custom.work-orders";
+    process.env.RABBITMQ_SAGA_EVENTS_QUEUE = "custom.sagas";
+    process.env.RABBITMQ_CONSUMERS_ENABLED = "true";
 
     const config = loadRuntimeConfig();
 
@@ -54,6 +69,11 @@ describe("loadRuntimeConfig", () => {
       jwtIssuer: "custom-edge",
       jwtAudience: "custom-app",
       appEnv: "stag",
+      rabbitMqUrl: "amqp://rabbitmq:5672",
+      rabbitMqExchange: "custom.os.events",
+      rabbitMqWorkOrderEventsQueue: "custom.work-orders",
+      rabbitMqSagaEventsQueue: "custom.sagas",
+      rabbitMqConsumersEnabled: true,
     });
   });
 
