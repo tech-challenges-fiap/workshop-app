@@ -15,7 +15,10 @@ import type { ServiceTaskRepository } from "../../domain/service-task/repository
 import type { StockItemRepository } from "../../domain/stock-item/repository/stock-item-repository";
 import type { VehicleRepository } from "../../domain/vehicle/repository/vehicle-repository";
 import type { WorkOrderRepository } from "../../domain/work-order/repository/work-order-repository";
-import { recordWorkOrderStatusChange } from "../../infrastructure/observability/work-order-metrics";
+import {
+  noopWorkOrderMetrics,
+  type WorkOrderMetrics,
+} from "../../domain/work-order/observability/work-order-metrics";
 
 export interface CreateWorkOrderCustomerInput {
   name: string;
@@ -82,6 +85,7 @@ export class CreateWorkOrderWithFullPayload {
   constructor(
     private readonly deps: CreateWorkOrderWithFullPayloadDependencies,
     unitOfWork?: CreateWorkOrderWithFullPayloadUnitOfWork,
+    private readonly metrics: WorkOrderMetrics = noopWorkOrderMetrics,
   ) {
     this.unitOfWork = unitOfWork ?? {
       run: async (operation) => operation(this.deps),
@@ -100,6 +104,7 @@ export class CreateWorkOrderWithFullPayload {
         deps.workOrderRepository,
         deps.vehicleRepository,
         deps.serviceTaskRepository,
+        this.metrics,
       );
       const addServiceTask = new AddServiceTask(
         deps.serviceTaskRepository,
@@ -150,7 +155,7 @@ export class CreateWorkOrderWithFullPayload {
       workOrderInDiagnosis.startDiagnosis(input.createdAt);
       await deps.workOrderRepository.save(workOrderInDiagnosis);
 
-      recordWorkOrderStatusChange("RECEIVED", "DIAGNOSIS");
+      this.metrics.recordStatusChange("RECEIVED", "DIAGNOSIS");
 
       for (const service of input.services) {
         const requiredItems = buildRequiredItems(service, partIdsBySku);
@@ -180,7 +185,7 @@ export class CreateWorkOrderWithFullPayload {
       workOrderReadyForApproval.completeDiagnosis(input.createdAt);
       await deps.workOrderRepository.save(workOrderReadyForApproval);
 
-      recordWorkOrderStatusChange("DIAGNOSIS", workOrderReadyForApproval.toSnapshot().status);
+      this.metrics.recordStatusChange("DIAGNOSIS", workOrderReadyForApproval.toSnapshot().status);
 
       return workOrderReadyForApproval.toSnapshot();
     });

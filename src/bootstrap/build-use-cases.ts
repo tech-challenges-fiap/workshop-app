@@ -44,7 +44,10 @@ import { StartDiagnosis } from "../application/work-order/start-diagnosis";
 import { CompleteDiagnosis } from "../application/work-order/complete-diagnosis";
 import { GetWorkOrderStatusDurationMetrics } from "../application/work-order/get-work-order-status-duration-metrics";
 import { HandleExternalWorkOrderEvent } from "../application/work-order/handle-external-work-order-event";
+import { HandleInboundWorkOrderSagaEvent } from "../application/work-order/handle-inbound-work-order-saga-event";
+import { OrchestrateWorkOrderSaga } from "../application/work-order/orchestrate-work-order-saga";
 import { CreateWorkOrderWithFullPayloadUnitOfWorkPostgres } from "../infrastructure/work-order/create-work-order-with-full-payload-unit-of-work-postgres";
+import { workOrderMetrics } from "../infrastructure/observability/work-order-metrics";
 
 export interface ApplicationDeps {
   auth: {
@@ -103,6 +106,8 @@ export interface ApplicationDeps {
     startDiagnosis: StartDiagnosis;
     completeDiagnosis: CompleteDiagnosis;
     getStatusDurationMetrics: GetWorkOrderStatusDurationMetrics;
+    orchestrateSaga: OrchestrateWorkOrderSaga;
+    handleInboundSagaEvent: HandleInboundWorkOrderSagaEvent;
   };
   webhooks: {
     handleExternalWorkOrderEvent: HandleExternalWorkOrderEvent;
@@ -206,23 +211,35 @@ export function buildApplicationDeps(
           workOrderRepository: infra.workOrderRepository,
         },
         new CreateWorkOrderWithFullPayloadUnitOfWorkPostgres(),
+        workOrderMetrics,
       ),
       getWorkOrderById: new GetWorkOrderById(infra.workOrderRepository),
       listWorkOrders: new ListWorkOrders(infra.workOrderRepository),
-      cancelWorkOrder: new CancelWorkOrder(infra.workOrderRepository),
-      deliverVehicle: new DeliverVehicle(infra.workOrderRepository),
+      cancelWorkOrder: new CancelWorkOrder(infra.workOrderRepository, workOrderMetrics),
+      deliverVehicle: new DeliverVehicle(infra.workOrderRepository, workOrderMetrics),
       getWorkOrderByPublicToken: new GetWorkOrderByPublicToken(infra.workOrderRepository),
-      startDiagnosis: new StartDiagnosis(infra.workOrderRepository),
+      startDiagnosis: new StartDiagnosis(infra.workOrderRepository, workOrderMetrics),
       getStatusDurationMetrics: new GetWorkOrderStatusDurationMetrics(infra.workOrderRepository),
-      completeDiagnosis: new CompleteDiagnosis(infra.workOrderRepository, {
-        vehicleRepository: infra.vehicleRepository,
-        personRepository: infra.personRepository,
-        serviceTaskRepository: infra.serviceTaskRepository,
-        serviceRepository: infra.serviceRepository,
-        stockItemRepository: infra.stockItemRepository,
-        notification: infra.notification,
-        publicBaseUrl: DEFAULT_PUBLIC_BASE_URL,
-      }),
+      orchestrateSaga: new OrchestrateWorkOrderSaga(
+        infra.workOrderSagaRepository,
+        infra.workOrderEventPublisher,
+      ),
+      handleInboundSagaEvent: new HandleInboundWorkOrderSagaEvent(
+        new OrchestrateWorkOrderSaga(infra.workOrderSagaRepository, infra.workOrderEventPublisher),
+      ),
+      completeDiagnosis: new CompleteDiagnosis(
+        infra.workOrderRepository,
+        {
+          vehicleRepository: infra.vehicleRepository,
+          personRepository: infra.personRepository,
+          serviceTaskRepository: infra.serviceTaskRepository,
+          serviceRepository: infra.serviceRepository,
+          stockItemRepository: infra.stockItemRepository,
+          notification: infra.notification,
+          publicBaseUrl: DEFAULT_PUBLIC_BASE_URL,
+        },
+        workOrderMetrics,
+      ),
     },
     webhooks: {
       handleExternalWorkOrderEvent: new HandleExternalWorkOrderEvent({
@@ -249,18 +266,22 @@ export function buildApplicationDeps(
             notification: infra.notification,
           },
         ),
-        startDiagnosis: new StartDiagnosis(infra.workOrderRepository),
-        completeDiagnosis: new CompleteDiagnosis(infra.workOrderRepository, {
-          vehicleRepository: infra.vehicleRepository,
-          personRepository: infra.personRepository,
-          serviceTaskRepository: infra.serviceTaskRepository,
-          serviceRepository: infra.serviceRepository,
-          stockItemRepository: infra.stockItemRepository,
-          notification: infra.notification,
-          publicBaseUrl: DEFAULT_PUBLIC_BASE_URL,
-        }),
-        cancelWorkOrder: new CancelWorkOrder(infra.workOrderRepository),
-        deliverVehicle: new DeliverVehicle(infra.workOrderRepository),
+        startDiagnosis: new StartDiagnosis(infra.workOrderRepository, workOrderMetrics),
+        completeDiagnosis: new CompleteDiagnosis(
+          infra.workOrderRepository,
+          {
+            vehicleRepository: infra.vehicleRepository,
+            personRepository: infra.personRepository,
+            serviceTaskRepository: infra.serviceTaskRepository,
+            serviceRepository: infra.serviceRepository,
+            stockItemRepository: infra.stockItemRepository,
+            notification: infra.notification,
+            publicBaseUrl: DEFAULT_PUBLIC_BASE_URL,
+          },
+          workOrderMetrics,
+        ),
+        cancelWorkOrder: new CancelWorkOrder(infra.workOrderRepository, workOrderMetrics),
+        deliverVehicle: new DeliverVehicle(infra.workOrderRepository, workOrderMetrics),
         workOrderWebhookEventRepository: infra.workOrderWebhookEventRepository,
       }),
     },

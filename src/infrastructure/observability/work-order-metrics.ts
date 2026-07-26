@@ -4,6 +4,7 @@ import {
   workOrderDurationHistogram,
   integrationErrorCounter,
 } from "./telemetry";
+import type { WorkOrderMetrics } from "../../domain/work-order/observability/work-order-metrics";
 
 export function recordWorkOrderCreated(): void {
   workOrderCreatedCounter.add(1);
@@ -29,3 +30,8 @@ export function recordWorkOrderStatusChange(
 export function recordIntegrationError(target: string): void {
   integrationErrorCounter.add(1, { target });
 }
+
+export const workOrderMetrics: WorkOrderMetrics = {
+  recordCreated: recordWorkOrderCreated,
+  recordStatusChange: recordWorkOrderStatusChange,
+};

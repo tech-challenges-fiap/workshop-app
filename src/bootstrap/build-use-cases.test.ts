@@ -13,6 +13,8 @@ import { CreateWorkOrderWithFullPayload } from "../application/work-order/create
 import { CompleteDiagnosis } from "../application/work-order/complete-diagnosis";
 import { CompleteServiceTask } from "../application/service-task/complete-service-task";
 import { HandleExternalWorkOrderEvent } from "../application/work-order/handle-external-work-order-event";
+import { HandleInboundWorkOrderSagaEvent } from "../application/work-order/handle-inbound-work-order-saga-event";
+import { OrchestrateWorkOrderSaga } from "../application/work-order/orchestrate-work-order-saga";
 
 const TEST_CONFIG: AppRuntimeConfig = {
   adminUsername: "test-admin",
@@ -20,6 +22,14 @@ const TEST_CONFIG: AppRuntimeConfig = {
   beeceptorNotificationUrl: "https://example.com/notify",
   appPort: 3000,
   jwtSecret: "secret",
+  jwtIssuer: "workshop-edge",
+  jwtAudience: "workshop-app",
+  appEnv: "test",
+  rabbitMqUrl: "",
+  rabbitMqExchange: "workshop.os.events",
+  rabbitMqWorkOrderEventsQueue: "workshop.os.work-order-events",
+  rabbitMqSagaEventsQueue: "workshop.os.saga-events",
+  rabbitMqConsumersEnabled: false,
 };
 
 describe("buildApplicationDeps", () => {
@@ -34,6 +44,8 @@ describe("buildApplicationDeps", () => {
     expect(deps.vehicles.createVehicle).toBeInstanceOf(CreateVehicle);
     expect(deps.person.createPerson).toBeInstanceOf(CreatePerson);
     expect(deps.workOrders.createWorkOrder).toBeInstanceOf(CreateWorkOrderWithFullPayload);
+    expect(deps.workOrders.orchestrateSaga).toBeInstanceOf(OrchestrateWorkOrderSaga);
+    expect(deps.workOrders.handleInboundSagaEvent).toBeInstanceOf(HandleInboundWorkOrderSagaEvent);
     expect(deps.webhooks.handleExternalWorkOrderEvent).toBeInstanceOf(HandleExternalWorkOrderEvent);
   });
 

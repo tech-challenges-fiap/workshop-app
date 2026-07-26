@@ -6,6 +6,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `workshop-app` is the HTTP API and business logic service for the `workshop` domain. It owns HTTP behavior, domain/application logic, Drizzle schema/migrations, and Kubernetes manifests. It does not own API Gateway routes, Lambda implementations, EKS/VPC provisioning, or RDS provisioning.
 
+
+## OpenSpec Instructions
+
+This repository uses OpenSpec as the mandatory governance process for product, architecture, contracts, infrastructure, and behavior changes. Read `openspec/AGENTS.md` and this repository's `AGENTS.md` before any code change.
+
+- Do not modify implementation paths (`src/`, `terraform/`, `k8s/`, `kubernetes/`, workflows, schemas, API contracts, or runtime behavior) unless an approved change exists under `openspec/changes/<change-id>/`.
+- Validate the change with `npx --yes @fission-ai/openspec validate <change-id> --strict` before implementation and before PR handoff.
+- If the requested work has no change-id, or if the spec is ambiguous, stop and raise the question to Hermes/Void. Do not decide product or architecture scope silently.
+- Keep implementation inside the approved `tasks.md`; update the OpenSpec change before expanding scope.
+- Mention the OpenSpec change-id and validation result in the PR body.
+- After merge to `stag`, archive the completed change with `npx --yes @fission-ai/openspec archive <change-id>`.
+
 ## Commands
 
 ```bash

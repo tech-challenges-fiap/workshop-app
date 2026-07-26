@@ -1,3 +1,7 @@
+// Read-model projection for Phase 4 (f4-os-service-boundary).
+// This table is populated by seed or replication and must not be mutated
+// through OS Service business logic. Vehicle master data flows into
+// workshop-app as a projection only.
 import { integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { person } from "./person";
 

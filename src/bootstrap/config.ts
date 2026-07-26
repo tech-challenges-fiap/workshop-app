@@ -7,7 +7,16 @@ export interface AppRuntimeConfig {
   jwtIssuer: string;
   jwtAudience: string;
   appEnv: string;
+  rabbitMqUrl: string;
+  rabbitMqExchange: string;
+  rabbitMqWorkOrderEventsQueue: string;
+  rabbitMqSagaEventsQueue: string;
+  rabbitMqConsumersEnabled: boolean;
 }
+
+const DEFAULT_RABBITMQ_EXCHANGE = "workshop.os.events";
+const DEFAULT_RABBITMQ_WORK_ORDER_EVENTS_QUEUE = "workshop.os.work-order-events";
+const DEFAULT_RABBITMQ_SAGA_EVENTS_QUEUE = "workshop.os.saga-events";
 
 export function loadRuntimeConfig(): AppRuntimeConfig {
   return {
@@ -20,5 +29,12 @@ export function loadRuntimeConfig(): AppRuntimeConfig {
     jwtIssuer: process.env.JWT_ISSUER ?? "workshop-edge",
     jwtAudience: process.env.JWT_AUDIENCE ?? "workshop-app",
     appEnv: process.env.APP_ENV ?? process.env.NODE_ENV ?? "local",
+    rabbitMqUrl: process.env.RABBITMQ_URL ?? "",
+    rabbitMqExchange: process.env.RABBITMQ_EXCHANGE ?? DEFAULT_RABBITMQ_EXCHANGE,
+    rabbitMqWorkOrderEventsQueue:
+      process.env.RABBITMQ_WORK_ORDER_EVENTS_QUEUE ?? DEFAULT_RABBITMQ_WORK_ORDER_EVENTS_QUEUE,
+    rabbitMqSagaEventsQueue:
+      process.env.RABBITMQ_SAGA_EVENTS_QUEUE ?? DEFAULT_RABBITMQ_SAGA_EVENTS_QUEUE,
+    rabbitMqConsumersEnabled: process.env.RABBITMQ_CONSUMERS_ENABLED === "true",
   };
 }

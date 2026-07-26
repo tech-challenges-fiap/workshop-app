@@ -2,6 +2,8 @@
 
 [![prod/stag](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftech-challenges-fiap%2Fworkshop-app%2Fbadges%2Fbadges%2Fprod-stag-sync.json)](https://github.com/tech-challenges-fiap/workshop-app/compare/prod...stag)
 
+> Cloud-native workshop management API — Bun/Hono on EKS with full observability via Datadog.
+
 `workshop-app` is the main application repository for the `workshop` service.
 It owns the HTTP API, domain and application logic, PostgreSQL schema
 evolution, migrations, seeds, runtime packaging, and Kubernetes deployment
@@ -12,12 +14,23 @@ RDS provisioning.
 
 ## What this repository owns
 
+`workshop-app` is the **OS Service** (Ordem de Serviço) for Phase 4 of the
+FIAP Tech Challenge. Its primary domain is the work-order lifecycle.
+
 - Bun-based Hono HTTP API.
-- Workshop domain and application use cases.
+- Work-order domain and application use cases (`work_orders`,
+  `work_order_status_history` are primary data — sole system of record).
+- Read-model projections for `persons` and `vehicles` needed by work-order
+  response payloads (populated via seed or replication; never mutated by OS
+  Service business logic).
 - Drizzle schema, SQL migrations, seeds, and PostgreSQL repositories.
 - External JWT validation for tokens issued by `workshop-edge`.
 - JSON request logs, request correlation, and OpenTelemetry bootstrap.
 - Docker image and Kubernetes manifests for `stag` and `prod`.
+
+**Cross-service boundary**: `workshop-app` MUST NOT open a direct database
+connection to Billing Service or Execution Service databases. Those services
+consume work-order state via events or the `workshop-app` HTTP API.
 
 ## Runtime contract
 
@@ -58,6 +71,20 @@ Default local runtime:
 PostgreSQL configuration comes from `DATABASE_URL` or the `POSTGRES_*`
 variables documented in `.env.example`.
 
+RabbitMQ messaging is optional in the current Phase 4 foundation. Configure
+`RABBITMQ_URL`, `RABBITMQ_EXCHANGE`, `RABBITMQ_WORK_ORDER_EVENTS_QUEUE`,
+`RABBITMQ_SAGA_EVENTS_QUEUE`, and `RABBITMQ_CONSUMERS_ENABLED` when a broker is
+available; leaving `RABBITMQ_URL` empty keeps local composition and unit tests
+broker-free.
+
+The OS-owned distributed-flow layer uses the local work-order saga plus the
+existing event publisher boundary to emit request intents for Billing
+authorization, Execution start, and distributed compensation. Inbound Billing
+and Execution saga events are handled idempotently by `eventId` and preserve the
+inbound `correlationId` on outbound intents. This repository does not claim a
+live broker end-to-end deployment and does not access Billing or Execution
+databases directly.
+
 ## Delivery flow
 
 - `feature/* -> stag`: Pull Request validated by lint, tests, build,
@@ -78,7 +105,12 @@ repository and pull request read/write permission.
 
 ## Documentation
 
-- [Docs index](docs/README.md)
+- [Docs index](docs/README.md) — central hub; start here
 - [Architecture](docs/architecture.md)
 - [Development](docs/development.md)
+- [Component diagram](docs/component-diagram.md) — cloud topology (API Gateway, Lambda, EKS stag/prod, RDS, Datadog)
+- [Sequence diagrams](docs/sequence-diagrams.md) — authentication and work-order creation flows
+- [ER diagram](docs/er-diagram.md) — relational model and migration rationale
+- [RFCs](docs/rfcs/) — RFC-001 (AWS choice), RFC-002 (authentication strategy)
+- [ADRs](docs/adrs/) — ADR-001 (REST/Hono), ADR-002 (HPA autoscaling)
 - [AI contributor instructions](AGENTS.md)

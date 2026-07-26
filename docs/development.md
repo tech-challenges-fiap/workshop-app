@@ -61,6 +61,20 @@ For JWT validation, set:
 - `JWT_ISSUER`
 - `JWT_AUDIENCE`
 
+RabbitMQ event support is optional for local development. Set these only when a
+broker is available; otherwise leave `RABBITMQ_URL` empty and consumers disabled:
+
+- `RABBITMQ_URL`
+- `RABBITMQ_EXCHANGE`
+- `RABBITMQ_WORK_ORDER_EVENTS_QUEUE`
+- `RABBITMQ_SAGA_EVENTS_QUEUE`
+- `RABBITMQ_CONSUMERS_ENABLED`
+
+Distributed-flow tests do not require a live RabbitMQ broker. They exercise the
+OS saga orchestrator, inbound event handler, and `WorkOrderEventPublisher`
+boundary with in-memory adapters to verify Billing authorization, Execution
+completion, compensation, duplicate event handling, and correlation propagation.
+
 For OpenTelemetry and Datadog, set:
 
 - `OTEL_SERVICE_NAME`

@@ -2,7 +2,8 @@ INSERT INTO person (name, document, phone, email, role, status)
 VALUES
   ('John Doe', '52998224725', '+5511999990000', 'john.doe@example.com', 'customer', 'active'),
   ('Mary Front', '16899535009', '+5511988887777', 'mary.front@example.com', 'front-desk', 'active'),
-  ('Carl Mechanic', '35795145637', '+5511977776666', 'carl.mechanic@example.com', 'mecanic', 'active')
+  ('Carl Mechanic', '35795145637', '+5511977776666', 'carl.mechanic@example.com', 'mecanic', 'active'),
+  ('Ana Bloqueada', '98765432100', '+5511966665555', 'ana.bloqueada@example.com', 'customer', 'inactive')
 ON CONFLICT (document) DO UPDATE SET
   name = EXCLUDED.name,
   phone = EXCLUDED.phone,
